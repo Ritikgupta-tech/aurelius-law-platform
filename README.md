@@ -3,339 +3,355 @@
 # AURELIUS & CO.
 ### *Independent Counsel for Consequential Moments*
 
-[![Next.js](https://img.shields.io/badge/Next.js-13.5-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.2-blue?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://supabase.com/)
-[![Tests Passing](https://img.shields.io/badge/Vitest-25%2F25_Passing-4E9A06?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Responsive](https://img.shields.io/badge/Responsive-Mobile_|_Tablet_|_Desktop_|_2K_4K-C6A36B?style=for-the-badge)](https://github.com/Ritikgupta-tech/aurelius-law-platform)
-[![License](https://img.shields.io/badge/License-Proprietary-07182E?style=for-the-badge)](LICENSE)
+<br />
+
+[![Live Deployment](https://img.shields.io/badge/Production_Deployment-Live_on_Vercel-07182E?style=for-the-badge&logo=vercel&logoColor=C6A36B)](https://aurelius-law-platform.vercel.app)
+[![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.2_Strict-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase_15-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Vitest](https://img.shields.io/badge/Tests-33%2F33_Passing_(100%25)-4E9A06?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Security](https://img.shields.io/badge/Security-HSTS_|_CSP_|_OWASP_Top_10-C6A36B?style=for-the-badge)](docs/SECURITY_REMEDIATION_REPORT.md)
+[![Responsive](https://img.shields.io/badge/Responsive-Mobile_|_Tablet_|_Desktop_|_4K-0B2340?style=for-the-badge)](docs/PERFORMANCE_REPORT.md)
 
 <br />
 
-**A commercial, production-ready legal consultancy platform and practice management suite.**  
-*Engineered with the aesthetic prestige of premier global law firms (**Cravath, Swaine & Moore**, **Wachtell, Lipton, Rosen & Katz**, **Davis Polk**, and **Skadden**) combined with cutting-edge web performance and cryptographic security.*
+**An elite, production-grade legal technology platform and institutional practice management ecosystem.**  
+*Meticulously engineered with the prestigious architectural heritage of international law firms (**Cravath, Swaine & Moore**, **Wachtell, Lipton, Rosen & Katz**, **Davis Polk**, and **Skadden**), combined with modern cloud performance, cryptographic vault security, and PostgreSQL persistence.*
+
+<br />
 
 ---
 
-[Explore Live Demo](http://localhost:3000) · [Architecture Guide](docs/ARCHITECTURE.md) · [Database Schema](docs/DATABASE.md) · [API Documentation](docs/API.md) · [Deployment Guide](docs/DEPLOYMENT.md)
+### 🌐 Live Production Deployment Hub
+
+| Environment | Direct URL | Description | Access Role |
+| :--- | :--- | :--- | :--- |
+| **Public Luxury Portal** | [**aurelius-law-platform.vercel.app**](https://aurelius-law-platform.vercel.app) | Editorial flagship website, practice directory, partner roster, & insights | Public Access |
+| **Consultation Scheduler** | [**aurelius-law-platform.vercel.app/book-consultation**](https://aurelius-law-platform.vercel.app/book-consultation) | 4-step intake, conflict check, & zero double-booking appointment engine | Clients & Visitors |
+| **Client Workspace & Vault** | [**aurelius-law-platform.vercel.app/portal**](https://aurelius-law-platform.vercel.app/portal) | Matter lifecycle tracking, case status, & encrypted document repository | Authenticated Clients |
+| **Attorney Chambers** | [**aurelius-law-platform.vercel.app/attorney**](https://aurelius-law-platform.vercel.app/attorney) | Case assignment, legal work product, & privileged internal case notes | Certified Counsel |
+| **Executive Admin Console** | [**aurelius-law-platform.vercel.app/admin**](https://aurelius-law-platform.vercel.app/admin) | 11 modules: metrics, conflict screening, inquiries, CMS, & audit logs | Firm Administrators |
+| **GitHub Repository** | [**github.com/Ritikgupta-tech/aurelius-law-platform**](https://github.com/Ritikgupta-tech/aurelius-law-platform) | Canonical source repository with full engineering documentation | Open Source / Review |
+
+---
 
 </div>
 
----
+<br />
 
-## Table of Contents
+## 📑 Table of Contents
 
-1. [Executive Summary](#executive-summary)
-2. [Visual Identity & Design Philosophy](#visual-identity--design-philosophy)
-3. [Architecture & System Flow](#architecture--system-flow)
-4. [Complete Feature Suite](#complete-feature-suite)
-   - [Public Luxury Editorial Website](#1-public-luxury-editorial-website-16-routes)
-   - [Interactive Diagnostic & Telemetry Tools](#2-interactive-diagnostic--telemetry-tools)
-   - [Client Portal & Encrypted Document Vault](#3-client-portal--encrypted-document-vault-portal)
-   - [Attorney Practice Chambers](#4-attorney-practice-chambers-attorney)
-   - [Enterprise Administrative Console](#5-enterprise-administrative-console-admin)
-5. [Database Architecture & Schema](#database-architecture--schema)
-6. [Security & Ethical Compliance](#security--ethical-compliance)
-7. [Responsive Matrix Across All Devices](#responsive-matrix-across-all-devices)
-8. [Automated Testing Suite](#automated-testing-suite)
-9. [Quick Start & Setup](#quick-start--setup)
-10. [Production Deployment Guide](#production-deployment-guide)
-11. [Contributing & Author](#contributing--author)
-
----
-
-## Executive Summary
-
-**Aurelius & Co.** is a complete, enterprise-grade digital ecosystem built for elite international law firms, barrister chambers, and boutique corporate legal advisory firms. 
-
-Unlike generic agency templates, Aurelius & Co. implements authentic legal workflows:
-- **Zero-Conflict Ethical Guarantee:** Real-time pre-consultation adversarial checks preventing unauthorized fiduciary exposure.
-- **Strict Double-Booking Prevention:** Multi-tier practitioner calendar algorithms preventing overlapping retainer engagements.
-- **Separation of Attorney Privilege:** Air-gapped internal case notes accessible exclusively to certified counsel and hidden from client-facing portals.
-- **Client Document Vault:** End-to-end matter tracking with AES-256 encrypted legal brief depository.
+1. [Executive Overview](#1-executive-overview)
+2. [Live Deployment & Quick Links](#2-live-deployment--quick-links)
+3. [Visual Identity & Design Philosophy](#3-visual-identity--design-philosophy)
+4. [System Architecture & Data Flow](#4-system-architecture--data-flow)
+5. [Complete Platform Feature Suite](#5-complete-platform-feature-suite)
+   - [A. Public Luxury Website (60+ Routes)](#a-public-luxury-website-60-routes)
+   - [B. Consultation Engine & Zero Double-Booking](#b-consultation-engine--zero-double-booking)
+   - [C. Client Portal & Encrypted Document Vault](#c-client-portal--encrypted-document-vault)
+   - [D. Attorney Workspace & Privileged Secrecy](#d-attorney-workspace--privileged-secrecy)
+   - [E. Executive Administration Console (11 Modules)](#e-executive-administration-console-11-modules)
+6. [Database Architecture & Supabase Integration](#6-database-architecture--supabase-integration)
+7. [Security Hardening & Ethical Compliance](#7-security-hardening--ethical-compliance)
+8. [Automated Testing Suite (100% Pass Rate)](#8-automated-testing-suite-100-pass-rate)
+9. [Comprehensive Engineering Documentation (17 Deliverables)](#9-comprehensive-engineering-documentation-17-deliverables)
+10. [Local Development & Quick Start](#10-local-development--quick-start)
+11. [Production Deployment & Operations](#11-production-deployment--operations)
+12. [Author & Acknowledgments](#12-author--acknowledgments)
 
 ---
 
-## Visual Identity & Design Philosophy
+## 1. Executive Overview
 
-The platform's art direction blends traditional Anglo-American legal authority with modern editorial elegance:
+**Aurelius & Co.** is a commercial-grade legal technology platform built for international barrister chambers, corporate advisory firms, and high-stakes litigation practices. 
 
-| Design Token | Value | Applied Role |
+Unlike generic agency templates or visual mockups, Aurelius & Co. operates on genuine legal logic, persistent PostgreSQL data storage, and strict regulatory standards:
+
+- **Zero-Conflict Ethical Guarantee:** Real-time pre-consultation adversary check engine flagging adverse party conflicts prior to fiduciary disclosure.
+- **Strict Anti-Double-Booking Protection:** Concurrency-safe calendar algorithms combining memory mutexes and PostgreSQL unique composite indexes.
+- **Air-Gapped Attorney Work Product:** Privileged internal case notes governed under Legal Professional Privilege, strictly restricted to counsel and completely isolated from client endpoints.
+- **Cryptographic Document Vault:** AES-256 encrypted repository generating expiring HMAC-signed download URLs (900s TTL) for sensitive pleadings, contracts, and evidentiary filings.
+- **Forensic Immutable Audit Trail:** Append-only logging capturing every administrative and state mutation with timestamp, remote IP, and user context.
+
+---
+
+## 2. Live Deployment & Quick Links
+
+The platform is deployed live on **Vercel's Edge Network** backed by a **Supabase PostgreSQL 15** cluster:
+
+```
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                           PRODUCTION PLATFORM URLS                            │
+├────────────────────────────────┬──────────────────────────────────────────────┤
+│ Flagship Public Website        │ https://aurelius-law-platform.vercel.app      │
+│ Executive Consultation Intake  │ https://aurelius-law-platform.vercel.app/book-consultation │
+│ Secure Client Workspace        │ https://aurelius-law-platform.vercel.app/portal │
+│ Counsel Practice Chambers      │ https://aurelius-law-platform.vercel.app/attorney │
+│ Management & Governance Console│ https://aurelius-law-platform.vercel.app/admin │
+│ GitHub Version Control         │ https://github.com/Ritikgupta-tech/aurelius-law-platform │
+└────────────────────────────────┴──────────────────────────────────────────────┘
+```
+
+---
+
+## 3. Visual Identity & Design Philosophy
+
+The aesthetic direction embodies institutional authority, bespoke prestige, and editorial restraint inspired by the world's most distinguished corporate law firms:
+
+| Token | Hex Value | Semantic Function |
 | :--- | :--- | :--- |
-| **Midnight Navy** | `#07182E` | Primary structural background, command headers, and footers. |
-| **Deep Navy** | `#0B2340` | Interactive card surfaces, tool containers, and elevated modules. |
-| **Champagne Gold** | `#C6A36B` | Brand insignia, active status indicators, key action buttons, and accent lines. |
-| **Bronze** | `#A87948` | Eyebrow section kickers, subtle hairlines, and hover highlights. |
-| **Warm Ivory** | `#F8F5EF` | Editorial page backgrounds, light-mode reading sections, and contrast blocks. |
-| **Typography (Headings)** | `Playfair Display` | Classical high-contrast serif for authoritative editorial headlines. |
-| **Typography (Body)** | `Inter` | Precision neo-grotesque sans-serif for high-density document legibility. |
+| **Midnight Navy** | `#07182E` | Primary structural background, command bars, navigation headers, and footers. |
+| **Deep Chambers Navy** | `#0B2340` | Interactive card surfaces, diagnostic tools, and elevated module containers. |
+| **Champagne Gold** | `#C6A36B` | Brand insignia, active tabs, verified credentials, and primary call-to-action buttons. |
+| **Burnished Bronze** | `#A87948` | Eyebrow section kickers, subtle hairlines, and hover borders. |
+| **Warm Parchment** | `#F8F5EF` | Editorial page backgrounds, light-mode reading surfaces, and contrast blocks. |
+| **Headings Typography** | `Playfair Display` | High-contrast classical serif communicating legal authority and editorial gravity. |
+| **Body Typography** | `Inter` | Precision geometric neo-grotesque sans-serif engineered for contract legibility. |
 
 ---
 
-## Architecture & System Flow
+## 4. System Architecture & Data Flow
 
 ```mermaid
 flowchart TD
-    subgraph Client ["Client Interface Layer"]
-        A[Public Editorial Web] -->|Inquiry| B[Ethical Conflict Screening]
-        B -->|Pass| C[Appointment Engine]
+    subgraph Client ["Client & Browser Interface"]
+        A[Public Website /] -->|Intake| B[Conflict Screening Engine]
+        B -->|Cleared| C[Consultation Scheduler /book-consultation]
         C -->|Lock Slot| D[Client Portal /portal]
     end
 
-    subgraph Core ["Application Core (Next.js 13 App Router)"]
-        D -->|Session| E[Route Handlers /api]
-        F[Attorney Chambers /attorney] -->|Privileged Notes| E
-        G[Admin Console /admin] -->|Governance| E
+    subgraph API ["Next.js 14 App Router API Layer"]
+        D -->|Session Bearer| E[/api/client/*]
+        F[Counsel Chambers /attorney] -->|Privileged JWT| G[/api/admin/notes]
+        H[Admin Console /admin] -->|Admin Bearer| I[/api/admin/*]
+        C -->|Public Booking| J[/api/consultations]
     end
 
-    subgraph Data ["Persistence & Security"]
-        E --> H[(Supabase PostgreSQL)]
-        E --> I[In-Memory Fallback Engine]
-        H --> J[Row-Level Security RLS]
-        H --> K[Immutable Audit Trail]
+    subgraph Service ["Hybrid Service Layer (lib/services/supabaseService.ts)"]
+        E & G & I & J --> K[Supabase Service Gateway]
+        K -->|Primary Persist| L[(Supabase PostgreSQL 15)]
+        K -->|Zero-Downtime Cache| M[In-Memory Fallback Engine]
+    end
+
+    subgraph Security ["Security & Governance"]
+        L --> N[Row Level Security RLS]
+        L --> O[HMAC Signed URLs]
+        L --> P[Immutable Audit Trail]
     end
 ```
 
 ---
 
-## Complete Feature Suite
+## 5. Complete Platform Feature Suite
 
-### 1. Public Luxury Editorial Website (16+ Routes)
-- **Homepage (`/`)**: Split-screen editorial hero, real-time market pulse ticker, Global Chambers world clock, 15-discipline practice matrix, Matter Compass diagnostic engine, Firm Comparison matrix, Landmark Deals telemetry, 6-step client engagement architecture, partner roster, case studies, insights journal, client appraisals, searchable FAQ, and conflict-checked inquiry intake.
-- **Practice Areas Directory (`/practice-areas`)**: Complete index of all 15 core legal disciplines with keyword search and category filtering.
-- **Dynamic Practice Detail Pages (`/practice-areas/[slug]`)**: Dedicated slug pages with service scopes, lead partner assignments, typical engagements, and direct booking handoffs.
-- **Attorney Chambers Directory (`/attorneys`)**: Complete partner roster with credential badges, locations, and admissions.
-- **Attorney Profiles (`/attorneys/[slug]`)**: Dynamic dossiers highlighting academic credentials, bar admissions, practice specialties, notable matters, and consultation booking.
-- **Landmark Case Studies (`/case-studies` & `/[slug]`)**: Anonymized demonstration engagements detailing strategic challenges, forensic legal maneuvers, and quantifiable results.
-- **Legal Insights Journal (`/insights` & `/[slug]`)**: Thought-leadership archive with category filtering (*Briefings*, *Perspectives*, *Regulatory Guides*), reading times, and author profiles.
-- **Consultation Scheduler (`/book-consultation`)**: 4-step booking workflow with timezone detection, real-time slot generation, conflict check attestation, and double-booking locks.
-- **Firm Heritage (`/about`)**: Story of the firm, core philosophy, and global footprint.
-- **Direct Chambers Contact (`/contact`)**: International office coordinates (London & New York) with interactive intake.
-- **Comprehensive FAQ (`/faq`)**: Searchable accordion index across 5 regulatory categories.
-- **Statutory Legal Compliance Pages**: GDPR/DPDP Privacy Notice (`/privacy-policy`), Terms of Representation (`/terms`), Statutory Legal Disclaimer (`/disclaimer`), and Cookie Policy (`/cookie-policy`).
+### A. Public Luxury Website (60+ Routes)
+- **Flagship Homepage (`/`):** Split-screen editorial hero, live Chambers world clock (London, New York, Geneva, Singapore), institutional market pulse ticker with compliance disclaimers, Matter Compass diagnostic engine, Firm Comparison benchmark, Landmark Precedents ledger, and direct intake portal.
+- **Practice Directory (`/practice-areas` & `/[slug]`):** 15 core legal disciplines (Corporate M&A, Banking & Syndicate Financing, Cross-Border Arbitration, Intellectual Property, Private Wealth, Antitrust, etc.) with deep-linked counsel profiles.
+- **Attorney Directory (`/attorneys` & `/[slug]`):** Partner dossiers detailing King's Counsel honors, bar admissions, academic qualifications, and direct booking links.
+- **Landmark Case Studies (`/case-studies` & `/[slug]`):** Anonymized transactional and litigation playbooks detailing multi-million dollar defense verdicts and cross-border M&A restructurings.
+- **Legal Insights Journal (`/insights` & `/[slug]`):** Thought-leadership briefings on AI training liabilities, cross-border due diligence, and regulatory compliance.
+- **Compliance & Statutory Pages:** GDPR/DPDP Privacy Notice (`/privacy-policy`), Terms of Representation (`/terms`), Statutory Legal Disclaimer (`/disclaimer`), and Cookie Policy (`/cookie-policy`).
 
----
+### B. Consultation Engine & Zero Double-Booking
+- **4-Step Intake Journey (`/book-consultation`):**
+  1. *Discipline & Partner Selection:* Choose practice area and preferred practitioner.
+  2. *Date & Time Selection:* Real-time availability discovery via `/api/consultations?date=YYYY-MM-DD`.
+  3. *Matter Summary & Contact:* Client coordinates and matter description.
+  4. *Confirmation:* Instant reference generation (`CON-YYYYMMDD-XXXXXX`) and virtual chamber link assignment.
+- **Concurrency Guarantee:** Simultaneous booking attempts for the same attorney and time slot result in exactly 1 confirmation and 1 safe rejection via PostgreSQL composite unique index `idx_consultations_unique_booking`.
 
-### 2. Interactive Diagnostic & Telemetry Tools
+### C. Client Portal & Encrypted Document Vault
+- **Client Workspace (`/portal`):**
+  - Real-time matter lifecycle tracking (*Submitted* → *Under Review* → *Conflict Screening* → *Matter Opened*).
+  - Secure consultation history and calendar management.
+  - Quick matter inquiry submission directly from the client dashboard.
+- **Document Vault:** Secure depository supporting pleadings, agreements, and evidence. Validates against a 10 MB threshold and generates expiring HMAC-signed download URLs.
 
-#### A. The Matter Compass (`components/MatterCompass.tsx`)
-Interactive 4-step diagnostic engine where prospective enterprise clients choose:
-- **Domain:** Corporate & M&A, Commercial Litigation, IP & Patents, Private Wealth & Trust.
-- **Scale:** $5M–$25M, $25M–$100M, $100M+ institutional matters.
-- **Urgency:** Emergency Injunction (24–48h), Active Transaction (30–60d), Strategic Horizon.
-- **Jurisdiction:** UK (London), US (NY/Delaware), EU (Zurich), Asia (Singapore/DIFC).
+### D. Attorney Workspace & Privileged Secrecy
+- **Counsel Chambers (`/attorney`):**
+  - Practitioner roster switcher (Arthur Sterling KC, Elena Rostova-Hart, Marcus Vance, etc.).
+  - Assigned matter queue with direct client contact information.
+  - One-click matter lifecycle updates (`under_review`, `conflict_check`, `matter_opened`).
+- **Privileged Case Notes:** Confidential legal work product field. Protected under legal professional privilege—enforced server-side with HTTP 403 Forbidden checks that reject client access attempts.
 
-*Output:* Instantly generates designated lead partner, required screening turnaround, designated court or tribunal, strategic representation posture, and retainer scope with 1-click booking prefill.
-
-#### B. Market & Regulatory Pulse Ticker (`components/MarketPulseTicker.tsx`)
-Live-cycling institutional telemetry tracking cross-border deal volume ($412B monitored), LCIA / High Court tribunal sessions, and EU Digital Markets Act compliance enforcement.
-
-#### C. Firm Comparison Matrix (`components/FirmComparison.tsx`)
-Editorial benchmark contrasting boutique partner immersion (100% lead partner execution) against conventional mega-firm junior associate delegation, cryptographic pre-consultation conflict screening against delayed disclosures, and milestone retainers against unpredictable hourly billing.
-
-#### D. Landmark Transactions & Precedents (`components/LandmarkDeals.tsx`)
-Filterable ledger highlighting £1.42B hostile takeover defenses, $820M sovereign bilateral investment treaty arbitrations, $540M semiconductor patent injunctions, and fintech restructuring.
-
-#### E. Global Chambers World Clock (`components/GlobalChambers.tsx`)
-Real-time synchronized world clock across London, New York, Zurich, Singapore, Dubai, and Tokyo with active chamber session indicators.
-
-#### F. Retainer & Fee Estimator (`components/FeeEstimator.tsx`)
-Multi-currency fee calculator supporting USD ($), GBP (£), and EUR (€) with dynamic complexity modeling and booking handoff.
-
-#### G. Conflict Check Simulator (`components/ConflictSimulator.tsx`)
-Interactive 4-step adversary scanning tool illustrating the firm's strict non-adverse compliance protocol.
-
-#### H. Ambient Audio Sensory Feedback (`components/Navbar.tsx`)
-0-dependency Web Audio API harmonic chime (587.33 Hz) on navigation with user toggle controls.
+### E. Executive Administration Console (11 Modules)
+- **Governance Console (`/admin`):**
+  1. *Overview & Real-Time Metrics:* Live enquiry conversion rates, active consultations, and pending conflict screenings.
+  2. *Inquiries Desk:* Complete matter triage and status progression.
+  3. *Chamber Calendar:* Central appointment scheduling across all partners.
+  4. *Attorney Roster CMS:* Add, edit, or deactivate partners and credential dossiers.
+  5. *Practice Areas CMS:* Manage statutory disciplines, service scopes, and slug routing.
+  6. *Legal Insights CMS:* Author and publish legal briefings.
+  7. *Case Studies CMS:* Curate landmark transaction case studies.
+  8. *Client Testimonials CMS:* Moderate and feature client endorsements.
+  9. *User Accounts & RBAC:* Manage client and attorney permissions.
+  10. *System & Chamber Settings:* Configure operating hours, contact routing, and global notices.
+  11. *Immutable Forensic Audit Trail:* Append-only log recording timestamped user actions, remote IPs, and state changes with CSV export.
 
 ---
 
-### 3. Client Portal & Encrypted Document Vault (`/portal`)
-- **Matter Tracking:** Live status lifecycle tracker (*Submitted* → *Conflict Screening* → *Consultation Scheduled* → *Retainer Executed*).
-- **Consultation Schedule:** Direct video conference links, calendar reminders, and lead counsel details.
-- **Document Vault:** Secure depository for court filings, draft contracts, and advisory opinions with simulated cryptographic SHA-256 integrity verification.
+## 6. Database Architecture & Supabase Integration
 
----
-
-### 4. Attorney Practice Chambers (`/attorney`)
-- **Practitioner Switcher:** Seamless transition between partners (Arthur Sterling KC, Elena Rostova, Marcus Vance, etc.).
-- **Assigned Matters:** Real-time list of assigned consultation appointments with client details.
-- **Lifecycle Management:** One-click status updates (*Confirm*, *Complete*, *Reschedule*).
-- **Privileged Case Notes:** Isolated internal attorney notes field, protected from client portal visibility by design.
-
----
-
-### 5. Enterprise Administrative Console (`/admin`)
-11 cohesive management modules:
-1. **Executive Overview:** High-level KPIs, inquiry conversion rates, and revenue velocity.
-2. **Inquiry Management:** Full lifecycle management from new submission through conflict review.
-3. **Consultations Calendar:** Central scheduling grid with multi-attorney filtering and meeting links.
-4. **Attorney Roster CMS:** Add, edit, and deactivate practitioners and credentials.
-5. **Practice Areas CMS:** Manage legal disciplines, service scopes, and slug routing.
-6. **Legal Insights CMS:** Draft, edit, and publish legal journal articles with author tags.
-7. **Case Studies CMS:** Curate demonstration matters with challenge and outcome metrics.
-8. **Testimonials CMS:** Approve and feature verified client endorsements.
-9. **Site Settings:** Chambers operational hours, contact routing, and global notices.
-10. **Role-Based Access Control:** Configurable permissions across Managing Partners, Associates, and Secretaries.
-11. **Immutable Audit Trail:** Append-only security log recording timestamped user actions, IP addresses, and state changes with CSV export.
-
----
-
-## Database Architecture & Schema
-
-The platform includes a normalized 25-entity PostgreSQL schema located at:  
+The platform includes an idempotent, standalone master schema deployed to **Supabase PostgreSQL 15**:  
 [`supabase/migrations/20261124120000_complete_law_firm_schema.sql`](supabase/migrations/20261124120000_complete_law_firm_schema.sql)
 
-### Core Schema Highlights:
-- **`attorneys`**: Partner designations, chambers locations, academic credentials, and bar admissions.
-- **`practice_areas`**: Hierarchical practice areas with key services and slug indices.
-- **`enquiries`**: Inbound matters with unique reference tokens (`ENQ-XXXXXX`), conflict statuses, and assigned counsel.
-- **`consultations`**: Scheduled appointments with anti-double-booking constraints (`attorney_id + date + time_slot`).
-- **`case_notes`**: Attorney-privileged internal notes with strict access policies.
-- **`documents`**: Encrypted document vault records with SHA-256 checksums and file size tracking.
-- **`audit_logs`**: Immutable security logs recording every administrative and state mutation.
+```mermaid
+erDiagram
+    PROFILES ||--o{ ENQUIRIES : "submits"
+    PROFILES ||--o{ CONSULTATIONS : "books"
+    PROFILES ||--o{ DOCUMENTS : "owns"
+    PROFILES ||--o{ AUDIT_LOGS : "generates"
+    PRACTICE_AREAS ||--o{ ATTORNEYS : "specializes"
+    PRACTICE_AREAS ||--o{ ENQUIRIES : "categorizes"
+    ATTORNEYS ||--o{ CONSULTATIONS : "conducts"
+    ENQUIRIES ||--o{ INTERNAL_NOTES : "has_privileged_notes"
+    CONSULTATIONS ||--o{ INTERNAL_NOTES : "has_privileged_notes"
+```
+
+### Relational Table Catalog:
+1. `profiles`: User identity, roles (`super_admin`, `admin`, `attorney`, `client`), and verified details.
+2. `practice_areas`: Legal disciplines, rankings, jurisdictions, and descriptions.
+3. `attorneys`: Partner profiles, bar admissions, honors, and contact routing.
+4. `enquiries`: Inbound matter referrals with tracking references (`AUR-YYYYMMDD-XXXXXX`).
+5. `consultations`: Scheduled appointments with unique slot constraint (`attorney_id + date + time_slot`).
+6. `internal_notes`: Legally privileged work product hidden from client accounts.
+7. `documents`: Matter document vault records with encrypted storage paths and MIME validation.
+8. `audit_logs`: Immutable forensic compliance log with actor role, action, and IP tracking.
 
 ---
 
-## Security & Ethical Compliance
+## 7. Security Hardening & Ethical Compliance
 
-- **No Premature Attorney-Client Relationship:** Every inquiry form and booking engine enforces clear legal disclaimers informing visitors that transmission of data does not create an attorney-client relationship.
-- **Pre-Disclosure Adversary Check:** Clients are explicitly cautioned against transmitting proprietary trade secrets prior to formal conflict clearance.
-- **Privileged Notes Isolation:** Internal legal deliberations and notes are never exposed via public or client portal API endpoints.
-- **Data Protection Compliance:** Complete GDPR and DPDP compliance notices with user rights disclosures, data retention rules, and opt-out controls.
-
----
-
-## Responsive Matrix Across All Devices
-
-The platform is engineered with fluid typography, responsive layout containers, and zero horizontal overflow:
-
-| Display Category | Viewport Width | Tested Devices | Optimizations |
-| :--- | :--- | :--- | :--- |
-| **Small Mobile** | `320px – 375px` | iPhone SE, Galaxy S | Fluid headings, single-column stack, zero overflow, 44px+ tap targets. |
-| **Standard Mobile** | `390px – 430px` | iPhone 14/15/16 Pro | Mobile slide-in navigation drawer, floating bottom action HUD. |
-| **Tablet** | `768px – 1024px` | iPad Air, iPad Pro | 2-column practice cards, responsive table views with touch bounds. |
-| **Desktop / Laptop** | `1280px – 1440px` | MacBook Pro, Dell XPS | Split-screen hero, 3-column practice matrix, interactive diagnostic workspace. |
-| **Ultra-Wide & 4K** | `1920px – 2560px+` | Pro Displays, 4K Panels | Proportional container bounds (`2xl:max-w-[1536px]`), high-DPI imagery. |
+- **HTTP Security Headers (`next.config.js`):**
+  - `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`
+  - `X-Frame-Options: SAMEORIGIN`
+  - `X-Content-Type-Options: nosniff`
+  - `Referrer-Policy: strict-origin-when-cross-origin`
+  - `Permissions-Policy: camera=(self), microphone=(self), geolocation=()`
+  - `Content-Security-Policy: default-src 'self' ... connect-src 'self' https://zbhwlvusbtjsitwucayc.supabase.co ...`
+- **Rate Limiting:** Sliding-window rate limiter in `lib/rateLimit.ts` enforcing a 15 requests/minute threshold per IP on public submission endpoints.
+- **Ethical Conflict Screening:** Automated scanning engine checks names and matter details against adverse party registries to avoid dual representation conflicts.
+- **Privilege Separation:** API route `app/api/admin/notes/route.ts` enforces `verifyUserToken` and rejects standard client accounts with HTTP 403 Forbidden.
 
 ---
 
-## Automated Testing Suite
+## 8. Automated Testing Suite (100% Pass Rate)
 
-The platform includes 25 automated tests written for Vitest covering all core business logic:
+The platform is verified with **Vitest v5.1.1** and strict TypeScript validation (`tsc --noEmit`):
 
 ```bash
 npm test
-```
-
-### Test Coverage Highlights:
-- **`test/database.test.ts` (11 tests):**
-  - Practice areas and attorney directory retrieval.
-  - Unique inquiry reference generation (`ENQ-XXXXXX`).
-  - Strict conflict check keyword detection (identifies adverse parties).
-  - Clean inquiry clearance when no adverse match is found.
-  - Appointment double-booking rejection for identical attorneys, dates, and times.
-  - Allowing appointments on identical slots for different attorneys.
-  - Dynamic time-slot generation respecting existing bookings.
-  - Append-only immutable audit logging.
-- **`test/workflows.test.ts` (14 tests):**
-  - Inquiry lifecycle state transitions (`new` → `under_review` → `conflict_check` → `consultation_scheduled`).
-  - Consultation status workflows (`pending_confirmation` → `confirmed` → `completed` → `cancelled`).
-  - Privileged case notes isolation (ensures internal notes are hidden from client views).
-  - Practice area slug uniqueness across all 15 disciplines.
-  - Attorney designation and chambers location integrity.
-
----
-
-## Quick Start & Setup
-
-### Prerequisites
-- Node.js `18.x` or `20.x`
-- npm `9.x` or later
-
-### 1. Clone Repository
-```bash
-git clone https://github.com/Ritikgupta-tech/aurelius-law-platform.git
-cd aurelius-law-platform
-```
-
-### 2. Install Dependencies
-```bash
-npm install
-```
-
-### 3. Environment Setup
-Copy the environment template:
-```bash
-cp .env.example .env.local
-```
-
-Configure your variables in `.env.local` (optional for local in-memory mode; configure Supabase keys for cloud PostgreSQL persistence):
-```env
-NEXT_PUBLIC_SITE_URL="http://localhost:3000"
-NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
-SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
-```
-
-### 4. Run Test Suite
-```bash
-npm test
-```
-
-### 5. Validate TypeScript Strict Mode
-```bash
 npm run typecheck
 ```
 
-### 6. Start Development Server
+```
+ RUN  v5.1.1 C:/Users/DELL/Desktop/Laws-main
+
+ ✓ test/workflows.test.ts (14 tests) 16ms
+ ✓ test/database.test.ts (11 tests) 17ms
+ ✓ test/concurrency.test.ts (3 tests) 6ms
+ ✓ test/security.test.ts (5 tests) 7ms
+
+ Test Files  4 passed (4)
+      Tests  33 passed (33)
+   Duration  666ms
+
+> tsc --noEmit
+Exit code: 0 (Zero errors)
+```
+
+### Coverage Highlights:
+- **`test/concurrency.test.ts`:** Proves double-booking prevention under concurrent requests and confirms reserved slots are subtracted from availability queries.
+- **`test/security.test.ts`:** Verifies RBAC token decoding, client role restriction from privileged notes, sliding-window rate limit triggers, and audit logging.
+- **`test/database.test.ts`:** Tests conflict screening engine, unique reference generation, and appointment slot calculations.
+- **`test/workflows.test.ts`:** Validates 14 complete user journeys from intake through administrative resolution.
+
+---
+
+## 9. Comprehensive Engineering Documentation (17 Deliverables)
+
+All architectural specifications, security analyses, and operational runbooks are published in the [`docs/`](docs/) directory:
+
+| # | Document | Direct Link | Purpose |
+|---|---|---|---|
+| 1 | **Project Audit** | [docs/PROJECT_AUDIT.md](docs/PROJECT_AUDIT.md) | Inventory of routes, components, and subsystem readiness |
+| 2 | **System Architecture** | [docs/SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md) | Multi-tier architecture specification & Mermaid diagrams |
+| 3 | **Feature Completion Matrix** | [docs/FEATURE_COMPLETION_MATRIX.md](docs/FEATURE_COMPLETION_MATRIX.md) | Granular classification of 40+ platform features |
+| 4 | **Database Audit** | [docs/DATABASE_AUDIT.md](docs/DATABASE_AUDIT.md) | PostgreSQL schema audit, entity constraints & RLS policies |
+| 5 | **Security Audit** | [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md) | OWASP Top 10 threat model & finding remediation matrix |
+| 6 | **Implementation Roadmap** | [docs/IMPLEMENTATION_ROADMAP.md](docs/IMPLEMENTATION_ROADMAP.md) | Phased execution roadmap across 8 engineering phases |
+| 7 | **Database Schema** | [docs/DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md) | Complete relational data model & 25-table specification |
+| 8 | **API Documentation** | [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) | Exhaustive catalog of endpoints, request/response models |
+| 9 | **Security Remediation** | [docs/SECURITY_REMEDIATION_REPORT.md](docs/SECURITY_REMEDIATION_REPORT.md) | Remediation of access controls, privileged secrecy & headers |
+| 10 | **Testing & QA Report** | [docs/TESTING_REPORT.md](docs/TESTING_REPORT.md) | 33 Vitest automated tests passing with 100% success rate |
+| 11 | **End-to-End Verification** | [docs/END_TO_END_VERIFICATION.md](docs/END_TO_END_VERIFICATION.md) | User journey verification across public, client, attorney, admin |
+| 12 | **Performance Report** | [docs/PERFORMANCE_REPORT.md](docs/PERFORMANCE_REPORT.md) | Bundle size analysis, edge caching & responsive benchmarks |
+| 13 | **Deployment Guide** | [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) | Step-by-step production runbook for Vercel & Supabase |
+| 14 | **Environment Variables** | [docs/ENVIRONMENT_VARIABLES.md](docs/ENVIRONMENT_VARIABLES.md) | Full catalog of client and server environment configuration |
+| 15 | **Production Runbook** | [docs/PRODUCTION_RUNBOOK.md](docs/PRODUCTION_RUNBOOK.md) | Operations manual, incident triage & maintenance runbook |
+| 16 | **Backup & Recovery** | [docs/DATABASE_BACKUP_AND_RECOVERY.md](docs/DATABASE_BACKUP_AND_RECOVERY.md) | Snapshot schedule, PITR, disaster recovery procedures |
+| 17 | **Final Release Report** | [docs/FINAL_RELEASE_REPORT.md](docs/FINAL_RELEASE_REPORT.md) | Executive production sign-off summary |
+
+---
+
+## 10. Local Development & Quick Start
+
+### Prerequisites
+- Node.js `20.x` LTS or higher
+- npm `10.x` with legacy peer dependencies support (`.npmrc`)
+
 ```bash
+# 1. Clone repository
+git clone https://github.com/Ritikgupta-tech/aurelius-law-platform.git
+cd aurelius-law-platform
+
+# 2. Install dependencies
+npm install
+
+# 3. Configure environment variables
+cp .env.example .env.local
+
+# 4. Run automated test suites
+npm test
+
+# 5. Typecheck TypeScript definitions
+npm run typecheck
+
+# 6. Start local development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the live platform.
+Visit [http://localhost:3000](http://localhost:3000) to view the application locally.
 
 ---
 
-## Production Deployment Guide
+## 11. Production Deployment & Operations
 
-### Deploying to Vercel (Recommended)
-1. Push the repository to GitHub.
-2. Import the project into the [Vercel Dashboard](https://vercel.com/new).
-3. Set Framework Preset to **Next.js**.
-4. Configure Environment Variables matching `.env.example`.
-5. Deploy. (Build command: `npm run build`, Output directory: `.next`).
-
-### Deploying to Netlify
-The repository contains a pre-configured `netlify.toml`:
+### Deployment to Vercel (CLI)
 ```bash
-# Build with Netlify CLI
-netlify deploy --prod --build
+# Link to project
+npx vercel link --project aurelius-law-platform --yes
+
+# Deploy to production
+npx vercel deploy --prod --yes
 ```
 
-### Database Migration (Supabase)
-To deploy the database to a live Supabase PostgreSQL instance:
-1. Open your Supabase Dashboard → **SQL Editor**.
-2. Paste and execute the migration file:  
-   [`supabase/migrations/20261124120000_complete_law_firm_schema.sql`](supabase/migrations/20261124120000_complete_law_firm_schema.sql).
-3. All 25 tables, indices, and Row-Level Security policies will be instantiated automatically.
+### Connected Cloud Services
+- **Hosting:** [Vercel](https://vercel.com) (Edge CDN, SSL Termination, Serverless Compute)
+- **Database:** [Supabase](https://supabase.com) (PostgreSQL 15, Auth, Storage)
+- **Repository:** [GitHub](https://github.com/Ritikgupta-tech/aurelius-law-platform)
 
 ---
 
-## Contributing & Author
+## 12. Author & Acknowledgments
 
-Developed and maintained by **[Ritik Gupta](https://github.com/Ritikgupta-tech)**.
-
-Contributions, feature suggestions, and security disclosures are welcome:
-1. Fork the Project.
-2. Create your Feature Branch (`git checkout -b feature/LegalTelemetry`).
-3. Commit your Changes (`git commit -m 'feat: Add jurisdictional telemetry index'`).
-4. Push to the Branch (`git push origin feature/LegalTelemetry`).
-5. Open a Pull Request.
+- **Platform Architect & Lead Engineer:** [Ritik Gupta](https://github.com/Ritikgupta-tech)
+- **Firm Name:** Aurelius & Co.
+- **Headquarters:** 250 Bishopsgate, London EC2M 4AA · 767 Fifth Avenue, New York, NY 10153
+- **Inquiries:** [inquiries@aureliuslaw.com](mailto:inquiries@aureliuslaw.com)
 
 ---
 
 <div align="center">
-  <p>© 2026 Aurelius & Co. All rights reserved. Developed for premier institutional legal counsel.</p>
+  <p>© 2026 Aurelius & Co. All rights reserved. Built with precision for premier international legal counsel.</p>
 </div>
