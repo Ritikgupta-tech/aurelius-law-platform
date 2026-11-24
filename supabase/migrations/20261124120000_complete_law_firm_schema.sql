@@ -1,10 +1,11 @@
 -- ====================================================================
 -- AURELIUS & CO. — COMPREHENSIVE PRODUCTION LAW FIRM SCHEMA & RLS
 -- Migration: 20261124120000_complete_law_firm_schema.sql
--- Covers all 25 Entities with Foreign Keys, Constraints, Indexes & Policies
+-- Standalone, fully idempotent setup for fresh Supabase projects.
+-- Covers all 25 Entities, Auth Triggers, Storage, and Seed Data.
 -- ====================================================================
 
--- 1. ROLES & PERMISSIONS
+-- 1. ROLES & PROFILES
 CREATE TABLE IF NOT EXISTS public.roles (
   id text PRIMARY KEY,
   description text NOT NULL,
@@ -19,6 +20,15 @@ INSERT INTO public.roles (id, description) VALUES
   ('client', 'Authenticated client with private portal access')
 ON CONFLICT (id) DO NOTHING;
 
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  display_name text NOT NULL DEFAULT '',
+  phone text NOT NULL DEFAULT '',
+  role text NOT NULL DEFAULT 'client' CHECK (role IN ('client', 'staff', 'attorney', 'admin', 'super_admin')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS public.user_permissions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   role_id text NOT NULL REFERENCES public.roles(id) ON DELETE CASCADE,
@@ -26,6 +36,26 @@ CREATE TABLE IF NOT EXISTS public.user_permissions (
   created_at timestamptz NOT NULL DEFAULT now(),
   UNIQUE(role_id, permission_key)
 );
+
+-- Profile trigger on auth.users
+CREATE OR REPLACE FUNCTION public.create_profile_for_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.profiles (id, display_name, role)
+  VALUES (new.id, coalesce(new.raw_user_meta_data ->> 'display_name', ''), 'client')
+  ON CONFLICT (id) DO NOTHING;
+  RETURN new;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_auth_user_created_profile ON auth.users;
+CREATE TRIGGER on_auth_user_created_profile
+AFTER INSERT ON auth.users
+FOR EACH ROW EXECUTE FUNCTION public.create_profile_for_user();
 
 -- 2. PRACTICE AREAS
 CREATE TABLE IF NOT EXISTS public.practice_areas (
@@ -92,14 +122,27 @@ CREATE TABLE IF NOT EXISTS public.clients (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
--- 6. ENQUIRIES (Enhanced with conflict status & attorney assignment)
--- (enquiries table already partially exists in earlier migrations, add missing columns safely)
-ALTER TABLE public.enquiries
-  ADD COLUMN IF NOT EXISTS phone text,
-  ADD COLUMN IF NOT EXISTS preferred_contact_method text DEFAULT 'email',
-  ADD COLUMN IF NOT EXISTS conflict_status text DEFAULT 'pending' CHECK (conflict_status IN ('pending', 'cleared', 'flagged')),
-  ADD COLUMN IF NOT EXISTS conflict_notes text,
-  ADD COLUMN IF NOT EXISTS assigned_attorney_id text REFERENCES public.attorneys(id) ON DELETE SET NULL;
+-- 6. ENQUIRIES (Self-contained creation)
+CREATE TABLE IF NOT EXISTS public.enquiries (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  reference text NOT NULL UNIQUE,
+  first_name text NOT NULL,
+  last_name text NOT NULL,
+  email text NOT NULL,
+  phone text,
+  preferred_contact_method text DEFAULT 'email',
+  practice_area text NOT NULL,
+  message text NOT NULL,
+  status text NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'under_review', 'conflict_check', 'awaiting_client_response', 'consultation_scheduled', 'converted', 'closed', 'rejected')),
+  conflict_status text DEFAULT 'pending' CHECK (conflict_status IN ('pending', 'cleared', 'flagged')),
+  conflict_notes text,
+  assigned_attorney_id text REFERENCES public.attorneys(id) ON DELETE SET NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_enquiries_status_created_at ON public.enquiries (status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_enquiries_email ON public.enquiries (lower(email));
 
 -- 7. ENQUIRY ASSIGNMENTS
 CREATE TABLE IF NOT EXISTS public.enquiry_assignments (
@@ -134,16 +177,32 @@ CREATE TABLE IF NOT EXISTS public.conflict_checks (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
--- 10. CONSULTATIONS (Enhanced with conflict, link & attorney references)
-ALTER TABLE public.consultations
-  ADD COLUMN IF NOT EXISTS attorney_id text REFERENCES public.attorneys(id) ON DELETE SET NULL,
-  ADD COLUMN IF NOT EXISTS meeting_link text,
-  ADD COLUMN IF NOT EXISTS location text,
-  ADD COLUMN IF NOT EXISTS client_name text,
-  ADD COLUMN IF NOT EXISTS client_email text,
-  ADD COLUMN IF NOT EXISTS client_phone text;
+-- 10. CONSULTATIONS (Self-contained creation)
+CREATE TABLE IF NOT EXISTS public.consultations (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  reference text NOT NULL UNIQUE,
+  user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  client_name text,
+  client_email text,
+  client_phone text,
+  attorney_id text REFERENCES public.attorneys(id) ON DELETE SET NULL,
+  practice_area text NOT NULL,
+  consultation_type text NOT NULL CHECK (consultation_type IN ('online', 'in_person', 'phone')),
+  scheduled_date date,
+  preferred_date date,
+  time_slot text,
+  preferred_time text,
+  timezone text NOT NULL DEFAULT 'UTC',
+  meeting_link text,
+  location text,
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'reschedule_requested', 'cancelled', 'completed', 'no_show')),
+  message text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
 
-CREATE INDEX IF NOT EXISTS idx_consultations_date_time ON public.consultations(scheduled_date, time_slot, status);
+CREATE INDEX IF NOT EXISTS idx_consultations_scheduled ON public.consultations(scheduled_date, time_slot, status);
+CREATE INDEX IF NOT EXISTS idx_consultations_user_id ON public.consultations(user_id, created_at DESC);
 
 -- 11. ATTORNEY AVAILABILITY
 CREATE TABLE IF NOT EXISTS public.attorney_availability (
@@ -170,10 +229,21 @@ CREATE TABLE IF NOT EXISTS public.blocked_time_slots (
 
 CREATE INDEX IF NOT EXISTS idx_blocked_slots ON public.blocked_time_slots(attorney_id, blocked_date);
 
--- 13. DOCUMENTS (Already partially created, ensure flags and audit)
-ALTER TABLE public.documents
-  ADD COLUMN IF NOT EXISTS is_confidential boolean DEFAULT true,
-  ADD COLUMN IF NOT EXISTS uploaded_by_name text;
+-- 13. DOCUMENTS (Self-contained creation)
+CREATE TABLE IF NOT EXISTS public.documents (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+  filename text NOT NULL,
+  storage_path text NOT NULL,
+  content_type text NOT NULL DEFAULT 'application/octet-stream',
+  size_bytes bigint NOT NULL DEFAULT 0,
+  category text NOT NULL DEFAULT 'other' CHECK (category IN ('identity', 'financial', 'contracts', 'correspondence', 'court_filing', 'other')),
+  is_confidential boolean DEFAULT true,
+  uploaded_by_name text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_documents_user ON public.documents(user_id, created_at DESC);
 
 -- 14. DOCUMENT ACCESS LOGS
 CREATE TABLE IF NOT EXISTS public.document_access_logs (
@@ -310,10 +380,64 @@ CREATE TABLE IF NOT EXISTS public.audit_logs (
 CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON public.audit_logs(created_at DESC);
 
 -- ====================================================================
+-- SEED DATA (All 15 Practice Areas & Key Attorneys)
+-- ====================================================================
+
+INSERT INTO public.practice_areas (id, slug, title, short_description, full_description, icon_name, featured_image, key_services, typical_matters, sort_order) VALUES
+  ('pa-corp', 'corporate-commercial', 'Corporate & Commercial Law', 'Strategic advisory for enterprise transactions and cross-border M&A.', 'Full service corporate representation from institutional funding to cross-border mergers.', 'Building2', 'https://images.pexels.com/photos/6077091/pexels-photo-6077091.jpeg', ARRAY['Cross-Border M&A', 'Corporate Structuring', 'Joint Ventures'], ARRAY['$420M cross-border acquisition', '$75M joint venture'], 1),
+  ('pa-formation', 'business-formation', 'Business Formation & Registration', 'Entity incorporation, founder agreements, and governance frameworks.', 'Comprehensive establishment of corporate structures in key global financial centers.', 'BriefcaseBusiness', 'https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg', ARRAY['Entity Structuring', 'Shareholder Pacts', 'Foreign Entity Registration'], ARRAY['Holding company restructuring across 3 jurisdictions'], 2),
+  ('pa-contracts', 'contract-drafting', 'Contract Drafting & Negotiation', 'Forensic commercial agreements, risk mitigation, and bilateral covenants.', 'Drafting and high-stakes negotiation of institutional commercial contracts.', 'FileText', 'https://images.pexels.com/photos/5668772/pexels-photo-5668772.jpeg', ARRAY['Master Services Agreements', 'Licensing Deals', 'Bilateral Supply Pacts'], ARRAY['$120M long-term procurement covenant'], 3),
+  ('pa-ip', 'intellectual-property', 'Intellectual Property Rights', 'Global patent prosecution, trade secret defense, and technology portfolios.', 'Global portfolio defense across common law and international registries.', 'Sparkles', 'https://images.pexels.com/photos/8112170/pexels-photo-8112170.jpeg', ARRAY['Patent Prosecution', 'Trade Secret Litigation', 'Technology Transfer'], ARRAY['Defended core AI architecture patents in international tribunal'], 4),
+  ('pa-trademark', 'trademark-copyright', 'Trademark & Copyright Law', 'Brand portfolio defense, anti-counterfeiting, and IP enforcement.', 'Comprehensive brand asset defense across international jurisdictions.', 'Award', 'https://images.pexels.com/photos/3760069/pexels-photo-3760069.jpeg', ARRAY['Madrid Protocol Filings', 'Opposition Proceedings', 'Brand Protection'], ARRAY['Worldwide brand defense across 45 national registries'], 5),
+  ('pa-litigation', 'civil-litigation', 'Civil Litigation & Trials', 'High-stakes trial advocacy in commercial, equity, and appellate courts.', 'Commanding representation in commercial trials and appellate litigation.', 'Scale', 'https://images.pexels.com/photos/5668473/pexels-photo-5668473.jpeg', ARRAY['Commercial Breach Claims', 'Shareholder Injunctions', 'Appellate Litigation'], ARRAY['Secured full dismissal of $85M breach of fiduciary claim'], 6),
+  ('pa-criminal', 'criminal-defense', 'White Collar Defense & Investigations', 'Government investigations, corporate fraud defense, and regulatory enforcement.', 'Strategic defense in high-stakes regulatory and government inquiries.', 'ShieldCheck', 'https://images.pexels.com/photos/6077381/pexels-photo-6077381.jpeg', ARRAY['Internal Corporate Inquiries', 'Securities Defense', 'Cross-Border Sanctions'], ARRAY['Internal investigation for multinational banking consortium'], 7),
+  ('pa-family', 'family-matrimonial', 'Family & Matrimonial Law', 'High-net-worth matrimonial dissolution, custody, and prenuptials.', 'Discreet counsel for multi-jurisdictional family estates and dynasties.', 'Users', 'https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg', ARRAY['Pre-Marital Wealth Structuring', 'Cross-Border Custody', 'Family Dynasty Trusts'], ARRAY['Negotiated pre-marital covenant safeguarding $180M family estate'], 8),
+  ('pa-realestate', 'real-estate-property', 'Real Estate & Property Law', 'Institutional acquisitions, commercial leasing, and zoning development.', 'Comprehensive property counsel for private investors and sovereign developers.', 'Landmark', 'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg', ARRAY['Commercial Acquisitions', 'Zoning & Permitting', 'Development Joint Ventures'], ARRAY['Structured $210M prime urban commercial portfolio acquisition'], 9),
+  ('pa-employment', 'employment-labour', 'Employment & Labour Law', 'Executive severance, cross-border transfers, and workplace compliance.', 'Counseling management on executive contracts and complex labor disputes.', 'BriefcaseBusiness', 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg', ARRAY['C-Suite Compensation', 'Restrictive Covenants', 'Class Action Defense'], ARRAY['Engineered executive transition package for FTSE 100 enterprise'], 10),
+  ('pa-tax', 'taxation-compliance', 'Taxation & Regulatory Compliance', 'Cross-border tax structuring, transfer pricing, and treaty planning.', 'Strategic counsel navigating domestic and international tax frameworks.', 'TrendingUp', 'https://images.pexels.com/photos/6863332/pexels-photo-6863332.jpeg', ARRAY['Cross-Border Tax Treaties', 'BEPS Compliance', 'Tax Controversy'], ARRAY['Restructured European operating entity saving $14M annually'], 11),
+  ('pa-docs', 'legal-documentation', 'Legal Documentation & Notarial', 'Apostilles, statutory declarations, and sovereign affidavits.', 'Authentication and statutory execution of international legal instruments.', 'FileText', 'https://images.pexels.com/photos/4427430/pexels-photo-4427430.jpeg', ARRAY['International Apostille', 'Corporate Resolutions', 'Cross-Border Affidavits'], ARRAY['Expedited execution of 300+ statutory filings for international merger'], 12),
+  ('pa-startup', 'startup-advisory', 'Startup & Venture Advisory', 'SAFEs, Series financing, cap-table governance, and spinouts.', 'Holistic legal advisory for high-velocity founders and institutional venture funds.', 'Sparkles', 'https://images.pexels.com/photos/3182812/pexels-photo-3182812.jpeg', ARRAY['Seed & Series Financing', 'Option Pool Architectures', 'Founder Governance'], ARRAY['Guided tech startup from pre-seed through $28M Series A financing'], 13),
+  ('pa-dispute', 'dispute-resolution', 'Arbitration & Alternative Dispute', 'LCIA, ICC, and SIAC institutional international arbitration.', 'Private tribunal advocacy resolving cross-border sovereign and commercial claims.', 'Scale', 'https://images.pexels.com/photos/5668481/pexels-photo-5668481.jpeg', ARRAY['LCIA / ICC Arbitration', 'Emergency Arbitrator Relief', 'Treaty Arbitration'], ARRAY['Represented sovereign energy consortium in $340M arbitration'], 14),
+  ('pa-consult', 'legal-consultation', 'Strategic Legal Advisory', 'General counsel services, board advisory, and crisis leadership.', 'Embedded advisory counsel for boards and executive leadership during transformational events.', 'Building2', 'https://images.pexels.com/photos/3184325/pexels-photo-3184325.jpeg', ARRAY['Boardroom Strategic Counsel', 'Crisis Mitigation', 'Fiduciary Audits'], ARRAY['Retained as independent advisory counsel to banking board during reorganization'], 15)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.attorneys (id, full_name, slug, title, designation, email, phone, office_location, bar_admissions, education, bio, experience_years, photo_url, is_active, featured) VALUES
+  ('att-1', 'Arthur Sterling, KC', 'arthur-sterling', 'King''s Counsel · Senior Managing Partner', 'Senior Managing Partner', 'a.sterling@aureliuslaw.com', '+44 20 7946 0912', 'London & New York Chambers', ARRAY['English Bar (King''s Counsel)', 'New York State Bar', 'DIFC Courts'], ARRAY['MA (Law), University of Oxford', 'LL.M., Harvard Law School'], 'Arthur Sterling KC commands international recognition for high-stakes commercial litigation and cross-border M&A defense.', 26, 'https://images.pexels.com/photos/38139419/pexels-photo-38139419.jpeg?auto=compress&cs=tinysrgb&h=1200&w=900', true, true),
+  ('att-2', 'Elena Rostova, LL.M.', 'elena-rostova', 'Partner · International Private Client & Real Estate', 'Partner', 'e.rostova@aureliuslaw.com', '+41 22 555 0194', 'Zurich & London Chambers', ARRAY['Zurich Bar Association', 'Solicitor of England and Wales'], ARRAY['Lic. iur., University of Zurich', 'LL.M., London School of Economics'], 'Elena Rostova specializes in cross-border wealth governance, private trusts, and high-value real estate development.', 18, 'https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg?auto=compress&cs=tinysrgb&h=1200&w=900', true, true),
+  ('att-3', 'Marcus Vance, Esq.', 'marcus-vance', 'Partner · Cross-Border IP, Tech & Antitrust', 'Partner', 'm.vance@aureliuslaw.com', '+1 212 555 0188', 'New York Chambers', ARRAY['New York State Bar', 'US Patent and Trademark Office', 'Federal Circuit'], ARRAY['BS in Computer Science, MIT', 'JD, Columbia Law School'], 'Marcus Vance represents leading technology enterprises, semiconductor innovators, and venture capital syndicates.', 16, 'https://images.pexels.com/photos/8112170/pexels-photo-8112170.jpeg?auto=compress&cs=tinysrgb&h=1200&w=900', true, true),
+  ('att-4', 'Alistair Finch, KC', 'alistair-finch', 'Partner · Commercial Litigation & White Collar Defense', 'Partner', 'a.finch@aureliuslaw.com', '+44 20 7946 0914', 'London Chambers', ARRAY['English Bar (King''s Counsel)', 'Arbitrator (LCIA Roster)'], ARRAY['BA, University of Cambridge', 'BCL, University of Oxford'], 'Alistair Finch KC has defended major financial institutions and executive leadership in complex international trials.', 22, 'https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&h=1200&w=900', true, true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Seed FAQs
+INSERT INTO public.faqs (id, question, answer, category, sort_order) VALUES
+  ('faq-1', 'How does your ethical conflict screening protocol operate?', 'Before accepting confidential matter documentation or conducting strategic consultations, our intake team verifies all adverse parties against our proprietary conflict registry. If an ethical conflict exists, we immediately notify the inquiring party and decline representation without disclosure of conflicting client matters.', 'Ethics & Intake', 1),
+  ('faq-2', 'Does submitting an enquiry create an attorney-client relationship?', 'No. Submitting an enquiry or booking an initial consultation does not form a formal attorney-client relationship. An attorney-client relationship is formally established only after successful conflict clearance and bilateral execution of our Engagement Letter.', 'Ethics & Intake', 2),
+  ('faq-3', 'What are your retainer models and billing structures?', 'We offer structured phased retainers, milestone-based capped billing, and transparent hourly rates depending on the complexity, jurisdictional breadth, and urgency of the matter. Every retainer is documented with unambiguous deliverable milestones.', 'Retainers & Fees', 3),
+  ('faq-4', 'Can consultations be conducted internationally via encrypted video?', 'Yes. All consultations are available via our encrypted client portal with high-definition video conferencing, or in-person across our London, New York, Zurich, and Singapore chambers.', 'Consultations', 4)
+ON CONFLICT (id) DO NOTHING;
+
+-- ====================================================================
+-- STORAGE BUCKET FOR CLIENT DOCUMENTS
+-- ====================================================================
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'client-documents',
+  'client-documents',
+  false,
+  10485760,
+  ARRAY['application/pdf','image/png','image/jpeg','image/webp','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- ====================================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ====================================================================
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.practice_areas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.attorneys ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.enquiries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.consultations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.case_studies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.testimonials ENABLE ROW LEVEL SECURITY;
@@ -321,20 +445,53 @@ ALTER TABLE public.faqs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.internal_notes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
--- Public can read published content
+-- Profiles: Users view/update their own profile
+DROP POLICY IF EXISTS "Users can view their own profile" ON public.profiles;
+CREATE POLICY "Users can view their own profile" ON public.profiles FOR SELECT TO authenticated USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can update their own profile" ON public.profiles;
+CREATE POLICY "Users can update their own profile" ON public.profiles FOR UPDATE TO authenticated USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+
+-- Public readable published tables
+DROP POLICY IF EXISTS "Public can view active practice areas" ON public.practice_areas;
 CREATE POLICY "Public can view active practice areas" ON public.practice_areas FOR SELECT TO PUBLIC USING (is_active = true);
+
+DROP POLICY IF EXISTS "Public can view active attorneys" ON public.attorneys;
 CREATE POLICY "Public can view active attorneys" ON public.attorneys FOR SELECT TO PUBLIC USING (is_active = true);
+
+DROP POLICY IF EXISTS "Public can view published blog posts" ON public.blog_posts;
 CREATE POLICY "Public can view published blog posts" ON public.blog_posts FOR SELECT TO PUBLIC USING (is_published = true);
+
+DROP POLICY IF EXISTS "Public can view published case studies" ON public.case_studies;
 CREATE POLICY "Public can view published case studies" ON public.case_studies FOR SELECT TO PUBLIC USING (is_published = true);
+
+DROP POLICY IF EXISTS "Public can view approved testimonials" ON public.testimonials;
 CREATE POLICY "Public can view approved testimonials" ON public.testimonials FOR SELECT TO PUBLIC USING (is_approved = true);
+
+DROP POLICY IF EXISTS "Public can view faqs" ON public.faqs;
 CREATE POLICY "Public can view faqs" ON public.faqs FOR SELECT TO PUBLIC USING (true);
 
--- Internal notes are privileged and NEVER accessible to public or standard clients
-CREATE POLICY "Staff and Admins can view internal notes" ON public.internal_notes FOR SELECT TO authenticated
-  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin', 'attorney')));
-CREATE POLICY "Staff and Admins can create internal notes" ON public.internal_notes FOR INSERT TO authenticated
-  WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin', 'attorney')));
+-- Consultations: Clients can view their own consultations
+DROP POLICY IF EXISTS "Clients can view their own consultations" ON public.consultations;
+CREATE POLICY "Clients can view their own consultations" ON public.consultations FOR SELECT TO authenticated USING (auth.uid() = user_id);
 
--- Audit logs are strictly readable by administrators
-CREATE POLICY "Admins can view audit logs" ON public.audit_logs FOR SELECT TO authenticated
-  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin')));
+-- Documents: Clients can view/insert their own documents
+DROP POLICY IF EXISTS "Clients can view their own documents" ON public.documents;
+CREATE POLICY "Clients can view their own documents" ON public.documents FOR SELECT TO authenticated USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Clients can insert their own documents" ON public.documents;
+CREATE POLICY "Clients can insert their own documents" ON public.documents FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
+
+-- Enquiries: Anyone can submit through public API; service_role reads/writes
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.enquiries TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.consultations TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.audit_logs TO service_role;
+
+-- Storage RLS
+DROP POLICY IF EXISTS "Clients can read their own documents" ON storage.objects;
+CREATE POLICY "Clients can read their own documents" ON storage.objects FOR SELECT TO authenticated
+USING (bucket_id = 'client-documents' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+DROP POLICY IF EXISTS "Clients can upload their own documents" ON storage.objects;
+CREATE POLICY "Clients can upload their own documents" ON storage.objects FOR INSERT TO authenticated
+WITH CHECK (bucket_id = 'client-documents' AND (storage.foldername(name))[1] = auth.uid()::text);
