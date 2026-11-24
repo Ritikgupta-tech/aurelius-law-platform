@@ -140,7 +140,7 @@ export default function BookConsultationPage() {
             Direct Legal Engagement
             <span className="w-6 h-[1px] bg-[#A87948]" />
           </div>
-          <h1 className="font-serif text-3xl sm:text-5xl text-[#07182E]">
+          <h1 className="font-serif text-3xl sm:text-5xl text-[#07182E] font-medium tracking-tight">
             Schedule an Executive Consultation
           </h1>
           <p className="text-sm text-slate-600 max-w-xl mx-auto font-light leading-relaxed">

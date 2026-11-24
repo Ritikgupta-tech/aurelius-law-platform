@@ -98,7 +98,7 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-7">
+            <nav className="hidden lg:flex items-center gap-4 xl:gap-6 2xl:gap-7 shrink-0">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
                 return (
@@ -106,7 +106,7 @@ export default function Navbar() {
                     key={link.href}
                     href={link.href}
                     onClick={playHapticTone}
-                    className={`text-[11px] uppercase tracking-[0.16em] font-medium transition-colors relative py-1 ${
+                    className={`text-[10px] xl:text-[11px] whitespace-nowrap uppercase tracking-[0.14em] xl:tracking-[0.16em] font-medium transition-colors relative py-1 ${
                       isActive ? 'text-[#C6A36B]' : 'text-slate-300 hover:text-white'
                     }`}
                   >
