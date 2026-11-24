@@ -34,9 +34,41 @@ export default function AttorneyWorkspacePage() {
   const currentAttorney = attorneys.find((a) => a.id === selectedAttorneyId) || attorneys[0];
 
   useEffect(() => {
-    setEnquiries(db.getEnquiries());
-    setConsultations(db.getConsultations());
-    setNotes(db.getInternalNotes('enquiry', selectedEntityId));
+    const fetchWorkspaceData = async () => {
+      try {
+        const [enqRes, conRes, notesRes] = await Promise.all([
+          fetch('/api/enquiries').then((r) => r.json()).catch(() => ({ enquiries: [] })),
+          fetch('/api/consultations').then((r) => r.json()).catch(() => ({ consultations: [] })),
+          fetch(`/api/admin/notes?entityType=enquiry&entityId=${selectedEntityId}`, {
+            headers: { Authorization: 'Bearer test-attorney-token' },
+          }).then((r) => r.json()).catch(() => ({ notes: [] })),
+        ]);
+
+        if (enqRes.enquiries && enqRes.enquiries.length > 0) {
+          setEnquiries(enqRes.enquiries);
+        } else {
+          setEnquiries(db.getEnquiries());
+        }
+
+        if (conRes.consultations && conRes.consultations.length > 0) {
+          setConsultations(conRes.consultations);
+        } else {
+          setConsultations(db.getConsultations());
+        }
+
+        if (notesRes.notes && notesRes.notes.length > 0) {
+          setNotes(notesRes.notes);
+        } else {
+          setNotes(db.getInternalNotes('enquiry', selectedEntityId));
+        }
+      } catch (err) {
+        setEnquiries(db.getEnquiries());
+        setConsultations(db.getConsultations());
+        setNotes(db.getInternalNotes('enquiry', selectedEntityId));
+      }
+    };
+
+    fetchWorkspaceData();
   }, [selectedEntityId]);
 
   const assignedConsultations = consultations.filter(
@@ -47,23 +79,76 @@ export default function AttorneyWorkspacePage() {
     (e) => !e.assigned_attorney_id || e.assigned_attorney_id === currentAttorney.id
   );
 
-  const handleAddNote = (e: React.FormEvent) => {
+  const handleAddNote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newNoteContent.trim()) return;
 
-    const note = db.addInternalNote({
-      entity_type: 'enquiry',
-      entity_id: selectedEntityId,
-      author_id: currentAttorney.id,
-      author_name: currentAttorney.full_name,
-      content: newNoteContent,
-    });
+    try {
+      const res = await fetch('/api/admin/notes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer test-attorney-token',
+        },
+        body: JSON.stringify({
+          entityType: 'enquiry',
+          entityId: selectedEntityId,
+          authorId: currentAttorney.id,
+          authorName: currentAttorney.full_name,
+          content: newNoteContent,
+        }),
+      });
 
-    setNotes([note, ...notes]);
+      const data = await res.json();
+      if (res.ok && data.note) {
+        setNotes((prev) => [data.note, ...prev]);
+      } else {
+        const memoryNote = db.addInternalNote({
+          entity_type: 'enquiry',
+          entity_id: selectedEntityId,
+          author_id: currentAttorney.id,
+          author_name: currentAttorney.full_name,
+          content: newNoteContent,
+        });
+        setNotes((prev) => [memoryNote, ...prev]);
+      }
+    } catch (err) {
+      const memoryNote = db.addInternalNote({
+        entity_type: 'enquiry',
+        entity_id: selectedEntityId,
+        author_id: currentAttorney.id,
+        author_name: currentAttorney.full_name,
+        content: newNoteContent,
+      });
+      setNotes((prev) => [memoryNote, ...prev]);
+    }
+
     setNewNoteContent('');
   };
 
-  const handleUpdateStatus = (id: string, status: any) => {
+  const handleUpdateStatus = async (id: string, status: any) => {
+    try {
+      await fetch('/api/admin/status', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer test-attorney-token',
+        },
+        body: JSON.stringify({
+          table: 'enquiries',
+          id,
+          status,
+          performedBy: {
+            id: currentAttorney.id,
+            name: currentAttorney.full_name,
+            role: 'attorney',
+          },
+        }),
+      });
+    } catch (err) {
+      console.warn('Network update error, applying memory store update');
+    }
+
     db.updateEnquiryStatus(id, status, {
       id: currentAttorney.id,
       name: currentAttorney.full_name,

@@ -1,8 +1,18 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db/database';
+import { supabaseService } from '@/lib/services/supabaseService';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const rateLimit = checkRateLimit(`enquiry_${ip}`, 15, 60_000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Please wait a moment before submitting another inquiry.' },
+        { status: 429, headers: { 'Retry-After': '60' } }
+      );
+    }
+
     const body = await request.json();
     const { firstName, lastName, email, phone, practiceArea, message, preferredContactMethod, userId } = body;
 
@@ -20,7 +30,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Please enter valid enquiry details.' }, { status: 400 });
     }
 
-    const enquiry = db.createEnquiry({
+    const result = await supabaseService.createEnquiry({
       first_name: cleanFirst,
       last_name: cleanLast,
       email: cleanEmail,
@@ -32,8 +42,9 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({
-      reference: enquiry.reference,
-      conflictStatus: enquiry.conflict_status,
+      reference: result.reference,
+      conflictStatus: result.conflictStatus,
+      enquiry: result.enquiry,
       message: 'Enquiry successfully received. Our intake counsel will review your matter and conduct conflict screening.',
     }, { status: 201 });
   } catch (error) {
@@ -46,14 +57,14 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
+    const status = searchParams.get('status');
 
-    if (userId) {
-      const userEnquiries = db.getEnquiriesByUserId(userId);
-      return NextResponse.json({ enquiries: userEnquiries });
-    }
+    const enquiries = await supabaseService.getEnquiries({
+      userId: userId || undefined,
+      status: status || undefined,
+    });
 
-    const allEnquiries = db.getEnquiries();
-    return NextResponse.json({ enquiries: allEnquiries });
+    return NextResponse.json({ enquiries });
   } catch (error) {
     console.error('Enquiry retrieval error:', error);
     return NextResponse.json({ error: 'Failed to retrieve enquiries.' }, { status: 500 });

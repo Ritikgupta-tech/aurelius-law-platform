@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db/database';
-import { ConsultationType } from '@/lib/db/types';
+import { supabaseService } from '@/lib/services/supabaseService';
+import { ConsultationType, ConsultationStatus } from '@/lib/db/types';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function GET(request: Request) {
   try {
@@ -8,20 +9,21 @@ export async function GET(request: Request) {
     const date = searchParams.get('date');
     const attorneyId = searchParams.get('attorneyId');
     const userId = searchParams.get('userId');
+    const status = searchParams.get('status');
 
     // If querying available slots for booking
     if (date) {
-      const slots = db.getAvailableSlots(attorneyId || null, date);
+      const slots = await supabaseService.getAvailableSlots(attorneyId || null, date);
       return NextResponse.json({ date, attorneyId, availableSlots: slots });
     }
 
-    if (userId) {
-      const userConsultations = db.getConsultationsByUserId(userId);
-      return NextResponse.json({ consultations: userConsultations });
-    }
+    const consultations = await supabaseService.getConsultations({
+      userId: userId || undefined,
+      attorneyId: attorneyId || undefined,
+      status: status || undefined,
+    });
 
-    const all = db.getConsultations();
-    return NextResponse.json({ consultations: all });
+    return NextResponse.json({ consultations });
   } catch (error) {
     console.error('Consultation GET error:', error);
     return NextResponse.json({ error: 'Failed to load consultations.' }, { status: 500 });
@@ -30,6 +32,15 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const rateLimit = checkRateLimit(`consultation_${ip}`, 15, 60_000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Please wait a moment before booking another appointment.' },
+        { status: 429, headers: { 'Retry-After': '60' } }
+      );
+    }
+
     const body = await request.json();
     const {
       clientName,
@@ -49,7 +60,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Please complete all required consultation booking fields.' }, { status: 400 });
     }
 
-    const bookingResult = db.bookConsultation({
+    const bookingResult = await supabaseService.bookConsultation({
       client_name: String(clientName).trim(),
       client_email: String(clientEmail).trim().toLowerCase(),
       client_phone: clientPhone ? String(clientPhone).trim() : undefined,
@@ -88,10 +99,10 @@ export async function PATCH(request: Request) {
     }
 
     const actor = performedBy || { id: 'admin', name: 'Managing Partner / Staff', role: 'admin' };
-    const success = db.updateConsultationStatus(id, status, actor);
+    const success = await supabaseService.updateConsultationStatus(id, status as ConsultationStatus, actor);
 
     if (!success) {
-      return NextResponse.json({ error: 'Consultation not found.' }, { status: 404 });
+      return NextResponse.json({ error: 'Consultation not found or update failed.' }, { status: 404 });
     }
 
     return NextResponse.json({ ok: true, message: `Status updated to ${status}` });

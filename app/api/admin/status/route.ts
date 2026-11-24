@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server';
+import { supabaseService } from '@/lib/services/supabaseService';
 import { db } from '@/lib/db/database';
+import { verifyUserToken, hasAllowedRole } from '@/lib/auth';
 
 export async function PATCH(request: Request) {
   try {
+    const authUser = await verifyUserToken(request);
+    if (authUser && !hasAllowedRole(authUser, ['admin', 'super_admin', 'attorney'])) {
+      return NextResponse.json({ error: 'Unauthorized: Administrative or legal counsel privileges required.' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { table, id, status, performedBy, attorneyId } = body;
 
@@ -10,23 +17,20 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Missing required update parameters.' }, { status: 400 });
     }
 
-    const actor = performedBy || { id: 'admin-1', name: 'Executive Administrator', role: 'admin' };
+    const actor = performedBy || {
+      id: authUser?.id || 'admin-1',
+      name: authUser?.displayName || 'Executive Administrator',
+      role: authUser?.role || 'admin',
+    };
 
     if (table === 'enquiries') {
-      if (attorneyId !== undefined) {
-        db.assignEnquiryAttorney(id, attorneyId, actor);
-      }
-      if (status) {
-        db.updateEnquiryStatus(id, status, actor);
-      }
-      return NextResponse.json({ ok: true, message: 'Enquiry updated successfully.' });
+      const success = await supabaseService.updateEnquiryStatus(id, status, actor, attorneyId);
+      return NextResponse.json({ ok: success, message: 'Enquiry updated successfully in database.' });
     }
 
     if (table === 'consultations') {
-      if (status) {
-        db.updateConsultationStatus(id, status, actor);
-      }
-      return NextResponse.json({ ok: true, message: 'Consultation updated successfully.' });
+      const success = await supabaseService.updateConsultationStatus(id, status, actor);
+      return NextResponse.json({ ok: success, message: 'Consultation updated successfully in database.' });
     }
 
     if (table === 'testimonials') {

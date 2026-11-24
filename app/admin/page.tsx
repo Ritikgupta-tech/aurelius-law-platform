@@ -105,7 +105,9 @@ export default function AdminDashboardPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/overview');
+      const res = await fetch('/api/admin/overview', {
+        headers: { Authorization: 'Bearer test-admin-token' },
+      });
       const data = await res.json();
       setMetrics(data.metrics || metrics);
       setEnquiries(data.enquiries || []);
@@ -133,7 +135,10 @@ export default function AdminDashboardPage() {
     try {
       await fetch('/api/admin/status', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer test-admin-token',
+        },
         body: JSON.stringify({
           table,
           id,
@@ -155,7 +160,9 @@ export default function AdminDashboardPage() {
   const openInternalNotes = async (type: 'enquiry' | 'consultation', id: string, ref: string) => {
     setNotesModalEntity({ type, id, ref });
     try {
-      const res = await fetch(`/api/admin/notes?entityType=${type}&entityId=${id}`);
+      const res = await fetch(`/api/admin/notes?entityType=${type}&entityId=${id}`, {
+        headers: { Authorization: 'Bearer test-admin-token' },
+      });
       const data = await res.json();
       setInternalNotes(data.notes || []);
     } catch (err) {
@@ -171,7 +178,10 @@ export default function AdminDashboardPage() {
     try {
       const res = await fetch('/api/admin/notes', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer test-admin-token',
+        },
         body: JSON.stringify({
           entityType: notesModalEntity.type,
           entityId: notesModalEntity.id,

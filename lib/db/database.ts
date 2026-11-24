@@ -1333,8 +1333,26 @@ class LawFirmDatabase {
     return newNote;
   }
 
+  // --- DOCUMENT VAULT ---
+  getDocuments(userId?: string): DocumentRecord[] {
+    if (userId) {
+      return this.documents.filter((d) => d.user_id === userId);
+    }
+    return [...this.documents];
+  }
+
+  addDocument(doc: Omit<DocumentRecord, 'id' | 'created_at'>): DocumentRecord {
+    const newDoc: DocumentRecord = {
+      ...doc,
+      id: `doc-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      created_at: new Date().toISOString(),
+    };
+    this.documents.unshift(newDoc);
+    return newDoc;
+  }
+
   // --- AUDIT LOGS ---
-  logAudit(entry: Omit<AuditLog, 'id' | 'created_at'>): void {
+  logAudit(entry: Omit<AuditLog, 'id' | 'created_at'>): AuditLog {
     const log: AuditLog = {
       ...entry,
       id: `log-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
@@ -1345,6 +1363,7 @@ class LawFirmDatabase {
     if (this.auditLogs.length > 500) {
       this.auditLogs.pop();
     }
+    return log;
   }
 
   getAuditLogs(): AuditLog[] {

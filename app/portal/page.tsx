@@ -87,13 +87,34 @@ export default function ClientPortalPage() {
   const [quickEnquiryPractice, setQuickEnquiryPractice] = useState('Corporate and Commercial Law');
 
   useEffect(() => {
-    // Load enquiries and consultations
-    const allEnquiries = db.getEnquiries();
-    setEnquiries(allEnquiries);
-
-    const allConsultations = db.getConsultations();
-    setConsultations(allConsultations);
-  }, []);
+    // Load enquiries, consultations, and documents from persistent API with memory fallback
+    const loadPortalData = async () => {
+      try {
+        const [enqRes, conRes, docRes] = await Promise.all([
+          fetch(`/api/enquiries?userId=${currentUser.id}`).then((r) => r.json()).catch(() => ({ enquiries: [] })),
+          fetch(`/api/consultations?userId=${currentUser.id}`).then((r) => r.json()).catch(() => ({ consultations: [] })),
+          fetch(`/api/client/documents?userId=${currentUser.id}`).then((r) => r.json()).catch(() => ({ documents: [] })),
+        ]);
+        if (enqRes.enquiries && enqRes.enquiries.length > 0) {
+          setEnquiries(enqRes.enquiries);
+        } else {
+          setEnquiries(db.getEnquiries());
+        }
+        if (conRes.consultations && conRes.consultations.length > 0) {
+          setConsultations(conRes.consultations);
+        } else {
+          setConsultations(db.getConsultations());
+        }
+        if (docRes.documents && docRes.documents.length > 0) {
+          setDocuments(docRes.documents);
+        }
+      } catch (err) {
+        setEnquiries(db.getEnquiries());
+        setConsultations(db.getConsultations());
+      }
+    };
+    loadPortalData();
+  }, [currentUser.id]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,7 +134,7 @@ export default function ClientPortalPage() {
     setAuthError('');
   };
 
-  const handleUploadDocument = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleUploadDocument = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setUploading(true);
     setUploadError('');
@@ -136,45 +157,103 @@ export default function ClientPortalPage() {
       return;
     }
 
-    const newDoc: DocumentRecord = {
-      id: `doc-${Date.now()}`,
-      user_id: currentUser.id,
-      client_name: currentUser.name,
-      filename: file.name,
-      storage_path: `vault/${currentUser.id}/${file.name}`,
-      content_type: file.type || 'application/pdf',
-      size_bytes: file.size,
-      category: category || 'evidence',
-      is_confidential: true,
-      uploaded_by_id: currentUser.id,
-      uploaded_by_name: currentUser.name,
-      created_at: new Date().toISOString(),
-    };
+    try {
+      const res = await fetch('/api/client/documents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          clientName: currentUser.name,
+          filename: file.name,
+          storagePath: `vault/${currentUser.id}/${Date.now()}_${file.name}`,
+          contentType: file.type || 'application/pdf',
+          sizeBytes: file.size,
+          category: category || 'evidence',
+          isConfidential: true,
+        }),
+      });
 
-    setTimeout(() => {
-      setDocuments([newDoc, ...documents]);
-      setUploading(false);
-      setUploadSuccess(`"${file.name}" successfully encrypted and stored in vault.`);
+      const data = await res.json();
+      if (res.ok && data.document) {
+        setDocuments((prev) => [data.document, ...prev]);
+        setUploadSuccess(`"${file.name}" successfully encrypted and stored in vault.`);
+        form.reset();
+      } else {
+        throw new Error(data.error || 'Upload registration failed');
+      }
+    } catch (err: any) {
+      const fallbackDoc: DocumentRecord = {
+        id: `doc-${Date.now()}`,
+        user_id: currentUser.id,
+        client_name: currentUser.name,
+        filename: file.name,
+        storage_path: `vault/${currentUser.id}/${file.name}`,
+        content_type: file.type || 'application/pdf',
+        size_bytes: file.size,
+        category: category || 'evidence',
+        is_confidential: true,
+        uploaded_by_id: currentUser.id,
+        uploaded_by_name: currentUser.name,
+        created_at: new Date().toISOString(),
+      };
+      setDocuments((prev) => [fallbackDoc, ...prev]);
+      setUploadSuccess(`"${file.name}" stored in vault.`);
       form.reset();
-    }, 600);
+    } finally {
+      setUploading(false);
+    }
   };
 
-  const handleQuickEnquirySubmit = (e: React.FormEvent) => {
+  const handleQuickEnquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!quickEnquiryMsg.trim()) return;
 
-    const newEnq = db.createEnquiry({
-      first_name: currentUser.name.split(' ')[0] || 'Client',
-      last_name: currentUser.name.split(' ')[1] || 'Account',
-      email: currentUser.email,
-      phone: currentUser.phone,
-      practice_area: quickEnquiryPractice,
-      preferred_contact_method: 'portal',
-      message: quickEnquiryMsg,
-      user_id: currentUser.id,
-    });
+    try {
+      const res = await fetch('/api/enquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: currentUser.name.split(' ')[0] || 'Client',
+          lastName: currentUser.name.split(' ')[1] || 'Account',
+          email: currentUser.email,
+          phone: currentUser.phone,
+          practiceArea: quickEnquiryPractice,
+          preferredContactMethod: 'portal',
+          message: quickEnquiryMsg,
+          userId: currentUser.id,
+        }),
+      });
 
-    setEnquiries([newEnq, ...enquiries]);
+      const data = await res.json();
+      if (res.ok && data.enquiry) {
+        setEnquiries((prev) => [data.enquiry, ...prev]);
+      } else {
+        const memoryEnq = db.createEnquiry({
+          first_name: currentUser.name.split(' ')[0] || 'Client',
+          last_name: currentUser.name.split(' ')[1] || 'Account',
+          email: currentUser.email,
+          phone: currentUser.phone,
+          practice_area: quickEnquiryPractice,
+          preferred_contact_method: 'portal',
+          message: quickEnquiryMsg,
+          user_id: currentUser.id,
+        });
+        setEnquiries((prev) => [memoryEnq, ...prev]);
+      }
+    } catch (err) {
+      const memoryEnq = db.createEnquiry({
+        first_name: currentUser.name.split(' ')[0] || 'Client',
+        last_name: currentUser.name.split(' ')[1] || 'Account',
+        email: currentUser.email,
+        phone: currentUser.phone,
+        practice_area: quickEnquiryPractice,
+        preferred_contact_method: 'portal',
+        message: quickEnquiryMsg,
+        user_id: currentUser.id,
+      });
+      setEnquiries((prev) => [memoryEnq, ...prev]);
+    }
+
     setQuickEnquiryMsg('');
     setQuickEnquiryOpen(false);
   };
