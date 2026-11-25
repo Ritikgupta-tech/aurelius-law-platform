@@ -64,6 +64,8 @@ export default function AdminDashboardPage() {
     | 'audit_logs'
   >('overview');
 
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
   // Loading & data states
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState({
@@ -242,8 +244,8 @@ export default function AdminDashboardPage() {
       {/* ==================================================================== */}
       <aside className="w-full lg:w-72 bg-[#07182E] text-slate-300 flex flex-col justify-between shrink-0 border-r border-[#C6A36B]/20">
         <div>
-          {/* Logo & Brand Header */}
-          <div className="p-6 border-b border-white/10 flex items-center justify-between">
+          {/* Logo & Brand Header with Mobile Toggle */}
+          <div className="p-4 sm:p-6 border-b border-white/10 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3">
               <div className="w-8 h-8 border border-[#C6A36B] text-[#C6A36B] flex items-center justify-center rotate-45">
                 <Scale size={16} className="-rotate-45" />
@@ -255,10 +257,45 @@ export default function AdminDashboardPage() {
                 </p>
               </div>
             </Link>
+
+            {/* Mobile Hamburger Button */}
+            <button
+              onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+              className="lg:hidden p-2 text-slate-300 hover:text-[#C6A36B] border border-white/10"
+              aria-label="Toggle modules navigation"
+            >
+              {mobileSidebarOpen ? <XCircle size={18} /> : <LayoutDashboard size={18} />}
+            </button>
           </div>
 
-          {/* Navigation Links */}
-          <nav className="p-4 space-y-1">
+          {/* Mobile Module Quick Ribbon (When sidebar closed on small screens) */}
+          <div className="lg:hidden p-2 bg-[#051426] border-b border-white/10 overflow-x-auto flex gap-2 scrollbar-none snap-x">
+            {[
+              { id: 'overview', label: 'Overview' },
+              { id: 'enquiries', label: `Inquiries (${metrics.totalEnquiries})` },
+              { id: 'consultations', label: `Appointments (${metrics.activeConsultations})` },
+              { id: 'attorneys', label: 'Attorneys' },
+              { id: 'audit_logs', label: 'Audit' },
+            ].map((quick) => (
+              <button
+                key={quick.id}
+                onClick={() => {
+                  setActiveModule(quick.id as any);
+                  setMobileSidebarOpen(false);
+                }}
+                className={`px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider shrink-0 snap-center transition-colors ${
+                  activeModule === quick.id
+                    ? 'bg-[#C6A36B] text-[#07182E]'
+                    : 'bg-white/5 text-slate-300 hover:bg-white/10'
+                }`}
+              >
+                {quick.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Navigation Links (Full on desktop, toggled on mobile) */}
+          <nav className={`p-4 space-y-1 ${mobileSidebarOpen ? 'block' : 'hidden lg:block'}`}>
             {[
               { id: 'overview', label: 'Overview & Metrics', icon: LayoutDashboard },
               { id: 'enquiries', label: `Enquiries (${metrics.totalEnquiries})`, icon: Inbox },
@@ -277,7 +314,10 @@ export default function AdminDashboardPage() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveModule(item.id as any)}
+                  onClick={() => {
+                    setActiveModule(item.id as any);
+                    setMobileSidebarOpen(false);
+                  }}
                   className={`w-full px-4 py-2.5 text-xs font-semibold uppercase tracking-wider flex items-center justify-between rounded-xs transition-colors ${
                     active
                       ? 'bg-[#C6A36B] text-[#07182E] shadow-sm font-bold'

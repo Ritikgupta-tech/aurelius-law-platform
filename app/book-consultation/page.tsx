@@ -149,25 +149,31 @@ export default function BookConsultationPage() {
 
           {/* Multi-step progress bar */}
           <div className="flex items-center justify-center gap-2 pt-6 max-w-md mx-auto">
-            {['1. Discipline & Partner', '2. Date & Time Slot', '3. Matter Details', '4. Confirmation'].map(
-              (label, idx) => (
-                <div key={label} className="flex-1 text-center">
-                  <div
-                    className={`h-1.5 w-full mb-2 transition-colors ${
-                      step >= idx + 1 ? 'bg-[#C6A36B]' : 'bg-slate-300'
-                    }`}
-                  />
-                  <span className="text-[10px] uppercase tracking-wider text-slate-500 font-medium block">
-                    {label}
-                  </span>
-                </div>
-              )
-            )}
+            {[
+              { full: '1. Discipline & Partner', short: '1. Discipline' },
+              { full: '2. Date & Time Slot', short: '2. Date & Slot' },
+              { full: '3. Matter Details', short: '3. Details' },
+              { full: '4. Confirmation', short: '4. Confirm' },
+            ].map((stepObj, idx) => (
+              <div key={stepObj.full} className="flex-1 text-center">
+                <div
+                  className={`h-1.5 w-full mb-2 transition-colors ${
+                    step >= idx + 1 ? 'bg-[#C6A36B]' : 'bg-slate-300'
+                  }`}
+                />
+                <span className="text-[10px] uppercase tracking-wider text-slate-500 font-medium hidden sm:block">
+                  {stepObj.full}
+                </span>
+                <span className="text-[10px] uppercase tracking-wider text-slate-500 font-medium sm:hidden">
+                  {stepObj.short}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Form Container */}
-        <div className="bg-white border border-[#07182E]/10 shadow-xl p-8 sm:p-12">
+        <div className="bg-white border border-[#07182E]/10 shadow-xl p-5 sm:p-8 md:p-12">
           {/* STEP 1: Practice Area, Attorney, and Consultation Type */}
           {step === 1 && (
             <div className="space-y-8">

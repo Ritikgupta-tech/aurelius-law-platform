@@ -391,7 +391,7 @@ export default function ClientPortalPage() {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-2">
+            <div className="flex overflow-x-auto sm:flex-wrap gap-2 border-b border-slate-200 pb-2 scrollbar-none snap-x">
               {[
                 { id: 'overview', label: 'Dashboard Overview', icon: User },
                 { id: 'consultations', label: `Consultations (${consultations.length})`, icon: Calendar },
@@ -404,7 +404,7 @@ export default function ClientPortalPage() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`px-5 py-2.5 text-xs uppercase tracking-wider font-semibold flex items-center gap-2 border-b-2 transition-all ${
+                    className={`px-4 sm:px-5 py-2.5 text-xs uppercase tracking-wider font-semibold flex items-center gap-2 border-b-2 transition-all shrink-0 snap-center whitespace-nowrap ${
                       active
                         ? 'border-[#C6A36B] text-[#07182E] bg-white shadow-sm'
                         : 'border-transparent text-slate-500 hover:text-[#07182E]'

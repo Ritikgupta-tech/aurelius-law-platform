@@ -186,45 +186,68 @@ export default function Navbar() {
 
         {/* Mobile Fullscreen / Slide Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-[#07182E] border-b border-[#C6A36B]/20 px-6 py-6 space-y-5 animate-in slide-in-from-top-4 duration-200 max-h-[85vh] overflow-y-auto">
-            {/* Direct Chambers Call Banner */}
-            <div className="p-3 bg-[#0B2340] border border-[#C6A36B]/30 flex items-center justify-between text-xs text-slate-300">
+          <div className="lg:hidden bg-[#07182E]/98 backdrop-blur-2xl border-b border-[#C6A36B]/30 px-5 sm:px-6 py-6 space-y-5 animate-in slide-in-from-top-4 duration-300 max-h-[88vh] overflow-y-auto shadow-2xl">
+            {/* Direct Chambers Call & Status Banner */}
+            <div className="p-3.5 bg-gradient-to-r from-[#0B2340] to-[#07182E] border border-[#C6A36B]/30 flex items-center justify-between text-xs text-slate-300 shadow-inner">
               <div className="flex items-center gap-2">
-                <Globe2 size={14} className="text-[#C6A36B]" />
-                <span>London & NY Chambers Active</span>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                </span>
+                <span className="text-[11px] font-medium text-slate-200">London & NY Active</span>
               </div>
-              <a href="tel:+442079460912" className="text-[#C6A36B] font-mono font-bold flex items-center gap-1">
-                <Phone size={12} /> Call
-              </a>
-            </div>
-
-            <div className="flex flex-col space-y-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => {
-                    playHapticTone();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="text-xs uppercase tracking-wider text-slate-200 hover:text-[#C6A36B] py-3 border-b border-white/5 flex items-center justify-between"
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setSoundEnabled(!soundEnabled)}
+                  className="text-slate-400 hover:text-[#C6A36B] text-[11px] flex items-center gap-1"
+                  title="Toggle Acoustic Tone"
                 >
-                  <span>{link.label}</span>
-                  <ArrowUpRight size={14} className="text-slate-500" />
-                </Link>
-              ))}
+                  {soundEnabled ? <Volume2 size={13} className="text-[#C6A36B]" /> : <VolumeX size={13} />}
+                  <span>{soundEnabled ? 'Chime On' : 'Chime Off'}</span>
+                </button>
+                <a href="tel:+442079460912" className="text-[#C6A36B] font-mono font-bold flex items-center gap-1 text-[11px] hover:underline">
+                  <Phone size={11} /> Call Chambers
+                </a>
+              </div>
             </div>
 
-            <div className="pt-2 flex flex-col gap-3">
+            {/* Navigation Links with Active Indicator */}
+            <div className="flex flex-col space-y-1">
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => {
+                      playHapticTone();
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`text-xs uppercase tracking-wider py-3.5 px-2 border-b border-white/5 flex items-center justify-between transition-colors ${
+                      isActive ? 'text-[#C6A36B] font-bold bg-[#C6A36B]/5' : 'text-slate-200 hover:text-[#C6A36B]'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#C6A36B]" />}
+                      {link.label}
+                    </span>
+                    <ArrowUpRight size={14} className={isActive ? 'text-[#C6A36B]' : 'text-slate-500'} />
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Quick Mobile Action Buttons */}
+            <div className="pt-2 flex flex-col sm:flex-row gap-3">
               <Link
                 href="/portal"
                 onClick={() => {
                   playHapticTone();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full text-center py-3 border border-[#C6A36B]/50 text-[#C6A36B] text-xs uppercase tracking-wider font-semibold"
+                className="flex-1 text-center py-3.5 border border-[#C6A36B]/50 text-[#C6A36B] text-xs uppercase tracking-wider font-semibold active:scale-98 transition-transform hover:bg-[#C6A36B]/10"
               >
-                Access Client Portal
+                Client Portal
               </Link>
               <Link
                 href="/book-consultation"
@@ -232,9 +255,9 @@ export default function Navbar() {
                   playHapticTone();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full text-center py-3.5 bg-[#C6A36B] text-[#07182E] text-xs uppercase tracking-wider font-bold shadow-lg"
+                className="flex-1 text-center py-3.5 bg-[#C6A36B] text-[#07182E] text-xs uppercase tracking-wider font-bold shadow-lg shadow-[#C6A36B]/20 active:scale-98 transition-transform hover:bg-[#d5b682]"
               >
-                Book Executive Consultation
+                Book Consultation
               </Link>
             </div>
           </div>

@@ -20,8 +20,8 @@ export default function FloatingActionHUD() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-3 left-3 right-3 sm:bottom-6 sm:left-auto sm:right-6 z-40 md:hidden animate-fade-in">
-      <div className="bg-[#07182E]/95 backdrop-blur-xl border border-[#C6A36B]/40 shadow-2xl p-2 px-3 flex items-center justify-between gap-2 max-w-md mx-auto">
+    <div className="fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] left-3 right-3 sm:bottom-6 sm:left-auto sm:right-6 z-40 md:hidden animate-fade-in">
+      <div className="bg-[#07182E]/98 backdrop-blur-2xl border border-[#C6A36B]/50 shadow-[0_10px_35px_rgba(0,0,0,0.5)] p-2 px-3 flex items-center justify-between gap-2 max-w-md mx-auto">
         {/* Direct Call Action */}
         <a
           href="tel:+442079460912"
@@ -43,7 +43,7 @@ export default function FloatingActionHUD() {
         {/* Priority Consultation CTA */}
         <Link
           href="/book-consultation"
-          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 bg-[#C6A36B] text-[#07182E] text-[11px] font-bold uppercase tracking-wider shadow-md active:scale-95 transition-transform"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 bg-[#C6A36B] text-[#07182E] text-[11px] font-bold uppercase tracking-wider shadow-md hover:bg-[#d8b884] active:scale-95 transition-transform"
         >
           <Calendar size={14} />
           <span>Book</span>

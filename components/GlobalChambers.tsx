@@ -116,14 +116,14 @@ export default function GlobalChambers() {
         </div>
 
         {/* Chamber Selectors Ribbon */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3 overflow-x-auto pb-2 sm:pb-0 scrollbar-none snap-x">
           {CHAMBERS.map((ch) => {
             const isSelected = selectedChamber.id === ch.id;
             return (
               <button
                 key={ch.id}
                 onClick={() => setSelectedChamber(ch)}
-                className={`p-4 text-left border transition-all duration-300 ${
+                className={`p-3.5 sm:p-4 text-left border transition-all duration-300 shrink-0 min-w-[130px] sm:min-w-0 snap-center ${
                   isSelected
                     ? 'border-[#C6A36B] bg-[#07182E] shadow-[0_0_20px_rgba(198,163,107,0.2)]'
                     : 'border-white/10 bg-[#0B2340]/40 hover:border-white/30 text-slate-400 hover:text-white'
@@ -132,14 +132,14 @@ export default function GlobalChambers() {
                 <p className="text-[10px] uppercase tracking-wider text-[#C6A36B] font-bold">
                   {ch.country}
                 </p>
-                <p className="font-serif text-lg text-white font-medium mt-1">{ch.city}</p>
+                <p className="font-serif text-base sm:text-lg text-white font-medium mt-1">{ch.city}</p>
               </button>
             );
           })}
         </div>
 
         {/* Selected Chamber Detail Card */}
-        <div className="p-8 sm:p-10 bg-[#07182E] border border-[#C6A36B]/40 shadow-2xl grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+        <div className="p-5 sm:p-8 md:p-10 bg-[#07182E] border border-[#C6A36B]/40 shadow-2xl grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 items-center">
           <div className="md:col-span-5 space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-950/80 border border-emerald-700/60 text-emerald-400 text-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />

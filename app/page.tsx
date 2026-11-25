@@ -331,13 +331,13 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Category Filter Tabs */}
-          <div className="flex flex-wrap gap-2 border-b border-white/10 pb-4">
+          {/* Category Filter Tabs with Mobile Smooth Swipe */}
+          <div className="flex overflow-x-auto sm:flex-wrap gap-2 border-b border-white/10 pb-4 scrollbar-none snap-x">
             {practiceCategories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-4 py-2 text-xs uppercase tracking-wider font-semibold transition-all ${
+                className={`px-3.5 sm:px-4 py-2 text-xs uppercase tracking-wider font-semibold transition-all shrink-0 snap-center whitespace-nowrap ${
                   activeCategory === cat.id
                     ? 'bg-[#C6A36B] text-[#07182E] shadow-sm font-bold'
                     : 'bg-[#0B2340]/50 text-slate-300 hover:text-white hover:bg-[#0B2340]'
