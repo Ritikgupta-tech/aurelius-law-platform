@@ -75,30 +75,30 @@ export default function Navbar() {
   return (
     <>
       <header className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${navBackground}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link
               href="/"
               onClick={playHapticTone}
-              className="flex items-center gap-3 group shrink-0"
+              className="flex items-center gap-3 group shrink-0 mr-4 xl:mr-8"
               aria-label="Aurelius & Co. Home"
             >
               <div className="w-9 h-9 border border-[#C6A36B] text-[#C6A36B] flex items-center justify-center rotate-45 transition-transform duration-300 group-hover:scale-105 group-hover:shadow-[0_0_15px_rgba(198,163,107,0.35)]">
                 <Scale size={18} className="-rotate-45" strokeWidth={1.5} />
               </div>
               <div className="flex flex-col">
-                <span className="font-serif text-xl tracking-wider text-white font-medium group-hover:text-[#F8F5EF] transition-colors">
+                <span className="font-serif text-lg xl:text-xl tracking-wider text-white font-medium group-hover:text-[#F8F5EF] transition-colors whitespace-nowrap">
                   Aurelius <i className="text-[#C6A36B] not-italic">&</i> Co.
                 </span>
-                <span className="text-[9px] uppercase tracking-[0.22em] text-[#C6A36B] font-sans font-semibold">
+                <span className="text-[9px] uppercase tracking-[0.22em] text-[#C6A36B] font-sans font-semibold whitespace-nowrap">
                   Legal Excellence
                 </span>
               </div>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-4 xl:gap-6 2xl:gap-7 shrink-0">
+            <nav className="hidden lg:flex items-center gap-3 xl:gap-5 2xl:gap-6 shrink-0">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
                 return (
@@ -106,7 +106,7 @@ export default function Navbar() {
                     key={link.href}
                     href={link.href}
                     onClick={playHapticTone}
-                    className={`text-[10px] xl:text-[11px] whitespace-nowrap uppercase tracking-[0.14em] xl:tracking-[0.16em] font-medium transition-colors relative py-1 ${
+                    className={`text-[10px] xl:text-[11px] whitespace-nowrap uppercase tracking-[0.12em] xl:tracking-[0.16em] font-medium transition-colors relative py-1 ${
                       isActive ? 'text-[#C6A36B]' : 'text-slate-300 hover:text-white'
                     }`}
                   >
@@ -120,18 +120,18 @@ export default function Navbar() {
             </nav>
 
             {/* Right Quick Actions */}
-            <div className="hidden lg:flex items-center gap-4">
+            <div className="hidden lg:flex items-center gap-2.5 xl:gap-4 shrink-0">
               {/* Search Icon Trigger */}
               <button
                 onClick={() => {
                   playHapticTone();
                   setSearchModalOpen(true);
                 }}
-                className="p-2 text-slate-300 hover:text-[#C6A36B] transition-colors flex items-center gap-1.5 text-xs"
+                className="p-1.5 xl:p-2 text-slate-300 hover:text-[#C6A36B] transition-colors flex items-center gap-1.5 text-xs"
                 title="Search (Cmd+K)"
               >
                 <Search size={15} />
-                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 border border-white/20 rounded-xs text-slate-400">
+                <span className="hidden xl:inline-block text-[10px] uppercase font-mono px-1.5 py-0.5 border border-white/20 rounded-xs text-slate-400">
                   ⌘K
                 </span>
               </button>
@@ -148,7 +148,7 @@ export default function Navbar() {
               <Link
                 href="/portal"
                 onClick={playHapticTone}
-                className="text-[11px] uppercase tracking-[0.14em] font-medium text-slate-300 hover:text-[#C6A36B] flex items-center gap-1.5 transition-colors"
+                className="text-[10px] xl:text-[11px] whitespace-nowrap uppercase tracking-[0.12em] xl:tracking-[0.14em] font-medium text-slate-300 hover:text-[#C6A36B] flex items-center gap-1.5 transition-colors"
               >
                 <User size={13} />
                 Client Portal
@@ -157,10 +157,10 @@ export default function Navbar() {
               <Link
                 href="/book-consultation"
                 onClick={playHapticTone}
-                className="px-5 py-2.5 bg-[#C6A36B] text-[#07182E] text-[11px] uppercase tracking-[0.14em] font-semibold flex items-center gap-2 hover:bg-[#d5b682] transition-all duration-300 hover:shadow-[0_4px_20px_rgba(198,163,107,0.3)]"
+                className="px-3.5 py-2 xl:px-5 xl:py-2.5 bg-[#C6A36B] text-[#07182E] text-[10px] xl:text-[11px] whitespace-nowrap uppercase tracking-[0.12em] xl:tracking-[0.14em] font-semibold flex items-center gap-1.5 xl:gap-2 hover:bg-[#d5b682] transition-all duration-300 hover:shadow-[0_4px_20px_rgba(198,163,107,0.3)] shrink-0"
               >
                 Book Consultation
-                <ArrowUpRight size={14} />
+                <ArrowUpRight size={13} className="shrink-0" />
               </Link>
             </div>
 
