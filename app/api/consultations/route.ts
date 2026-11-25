@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { supabaseService } from '@/lib/services/supabaseService';
 import { ConsultationType, ConsultationStatus } from '@/lib/db/types';
