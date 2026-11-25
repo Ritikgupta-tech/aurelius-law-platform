@@ -59,6 +59,16 @@ export async function POST(request: Request) {
       content: String(content).trim(),
     });
 
+    // Automatically emit immutable audit log entry for regulatory and privilege compliance
+    await supabaseService.logAudit({
+      user_id: effectiveAuthorId,
+      user_email: authUser?.email || 'admin@aureliuslaw.com',
+      user_role: authUser?.role || 'admin',
+      action: 'PRIVILEGED_NOTE_CREATED',
+      entity: entityType,
+      details: `Privileged internal note authored for ${entityType} ${entityId} by ${effectiveAuthorName}.`,
+    });
+
     return NextResponse.json({ note, message: 'Privileged note recorded and persisted.' }, { status: 201 });
   } catch (error) {
     console.error('Internal notes POST error:', error);
