@@ -31,7 +31,7 @@
 | **Client Workspace & Vault** | [**aurelius-law-platform.vercel.app/portal**](https://aurelius-law-platform.vercel.app/portal) | Matter lifecycle tracking, case status, & encrypted document repository | Authenticated Clients |
 | **Attorney Chambers** | [**aurelius-law-platform.vercel.app/attorney**](https://aurelius-law-platform.vercel.app/attorney) | Case assignment, legal work product, & privileged internal case notes | Certified Counsel |
 | **Executive Admin Console** | [**aurelius-law-platform.vercel.app/admin**](https://aurelius-law-platform.vercel.app/admin) | 11 modules: metrics, conflict screening, inquiries, CMS, & audit logs | Firm Administrators |
-| **GitHub Repository** | [**github.com/Ritikgupta-tech/aurelius-law-platform**](https://github.com/Ritikgupta-tech/aurelius-law-platform) | Canonical source repository with full engineering documentation | Open Source / Review |
+| **GitHub Repository** | [**github.com/AshivamTechnologies/Aurelius-Co.-Legal-Technology-Platform**](https://github.com/AshivamTechnologies/Aurelius-Co.-Legal-Technology-Platform) | Canonical source repository with full engineering documentation | Open Source / Review |
 
 ---
 
@@ -88,7 +88,7 @@ The platform is deployed live on **Vercel's Edge Network** backed by a **Supabas
 │ Secure Client Workspace        │ https://aurelius-law-platform.vercel.app/portal │
 │ Counsel Practice Chambers      │ https://aurelius-law-platform.vercel.app/attorney │
 │ Management & Governance Console│ https://aurelius-law-platform.vercel.app/admin │
-│ GitHub Version Control         │ https://github.com/Ritikgupta-tech/aurelius-law-platform │
+│ GitHub Version Control         │ https://github.com/AshivamTechnologies/Aurelius-Co.-Legal-Technology-Platform │
 └────────────────────────────────┴──────────────────────────────────────────────┘
 ```
 
@@ -302,8 +302,8 @@ All architectural specifications, security analyses, and operational runbooks ar
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/Ritikgupta-tech/aurelius-law-platform.git
-cd aurelius-law-platform
+git clone https://github.com/AshivamTechnologies/Aurelius-Co.-Legal-Technology-Platform.git
+cd Aurelius-Co.-Legal-Technology-Platform
 
 # 2. Install dependencies
 npm install
@@ -339,7 +339,7 @@ npx vercel deploy --prod --yes
 ### Connected Cloud Services
 - **Hosting:** [Vercel](https://vercel.com) (Edge CDN, SSL Termination, Serverless Compute)
 - **Database:** [Supabase](https://supabase.com) (PostgreSQL 15, Auth, Storage)
-- **Repository:** [GitHub](https://github.com/Ritikgupta-tech/aurelius-law-platform)
+- **Repository:** [GitHub](https://github.com/AshivamTechnologies/Aurelius-Co.-Legal-Technology-Platform)
 
 ---
 
