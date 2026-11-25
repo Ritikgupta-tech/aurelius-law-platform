@@ -186,7 +186,7 @@ export default function Navbar() {
 
         {/* Mobile Fullscreen / Slide Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-[#07182E]/98 backdrop-blur-2xl border-b border-[#C6A36B]/30 px-5 sm:px-6 py-6 space-y-5 animate-in slide-in-from-top-4 duration-300 max-h-[88vh] overflow-y-auto shadow-2xl">
+          <div className="lg:hidden bg-[#07182E] border-b border-[#C6A36B]/40 px-5 sm:px-6 py-6 space-y-5 animate-in slide-in-from-top-4 duration-300 max-h-[88vh] overflow-y-auto shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
             {/* Direct Chambers Call & Status Banner */}
             <div className="p-3.5 bg-gradient-to-r from-[#0B2340] to-[#07182E] border border-[#C6A36B]/30 flex items-center justify-between text-xs text-slate-300 shadow-inner">
               <div className="flex items-center gap-2">

@@ -67,12 +67,12 @@ export default function LuxuryAmbientEffects() {
         />
       )}
 
-      {/* 3. Floating Scroll to Top Pill */}
+      {/* 3. Floating Scroll to Top Pill (Desktop only to prevent mobile HUD collisions) */}
       {showScrollTop && (
         <button
           onClick={scrollToTop}
           aria-label="Scroll to top of page"
-          className="fixed bottom-24 right-5 sm:bottom-8 sm:right-8 z-40 p-3 bg-[#07182E]/90 hover:bg-[#C6A36B] text-[#C6A36B] hover:text-[#07182E] border border-[#C6A36B]/40 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 active:scale-95 group"
+          className="hidden sm:block fixed sm:bottom-8 sm:right-8 z-40 p-3 bg-[#07182E]/90 hover:bg-[#C6A36B] text-[#C6A36B] hover:text-[#07182E] border border-[#C6A36B]/40 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 active:scale-95 group"
         >
           <ArrowUp size={16} className="transition-transform group-hover:-translate-y-0.5" />
         </button>
