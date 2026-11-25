@@ -206,6 +206,9 @@ export default function Home() {
                 <p className="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400 mt-1">Jurisdictions</p>
               </div>
             </div>
+            <p className="text-[9px] uppercase tracking-wider text-slate-400/70 mt-2 font-mono">
+              * Representative firm benchmarks & demonstration metrics. Subject to formal partner disclosure verification.
+            </p>
           </div>
 
           {/* Right Column: Hero Visual with Bronze Border & Framing */}

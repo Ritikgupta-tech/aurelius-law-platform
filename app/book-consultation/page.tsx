@@ -479,7 +479,7 @@ export default function BookConsultationPage() {
                   disabled={submitting}
                   className="px-9 py-4 bg-[#C6A36B] text-[#07182E] text-xs uppercase tracking-widest font-bold hover:bg-[#d5b682] transition-colors disabled:opacity-50"
                 >
-                  {submitting ? 'Confirming Appointment...' : 'Confirm & Reserve Consultation'}
+                  {submitting ? 'Submitting Request...' : 'Submit Consultation Request'}
                 </button>
               </div>
             </form>
@@ -493,10 +493,18 @@ export default function BookConsultationPage() {
               </div>
 
               <div className="space-y-2">
-                <h2 className="font-serif text-3xl text-[#07182E]">Consultation Confirmed</h2>
-                <p className="text-xs text-slate-600 max-w-md mx-auto">
-                  Your appointment has been registered in our central calendar. A formal calendar invite and preliminary conflict notice have been prepared.
+                <h2 className="font-serif text-3xl text-[#07182E]">Consultation Request Received</h2>
+                <span className="inline-block px-3 py-1 bg-amber-50 border border-amber-200 text-amber-800 text-[10px] uppercase tracking-wider font-semibold">
+                  Status: Pending Chamber & Conflict Screening Confirmation
+                </span>
+                <p className="text-xs text-slate-600 max-w-md mx-auto pt-2">
+                  Your appointment request has been registered in our central calendar. In accordance with legal regulatory standards, appointments remain subject to formal conflict screening and partner availability confirmation. Our intake counsel will contact you to formalize your session.
                 </p>
+              </div>
+
+              {/* Confidentiality Warning Card */}
+              <div className="max-w-md mx-auto p-3.5 bg-slate-50 border-l-2 border-[#C6A36B] text-left text-[11px] text-slate-600 font-light leading-relaxed">
+                <strong>Confidentiality Notice:</strong> Submitting this consultation request does not establish an attorney-client relationship. An attorney-client relationship is created solely when a formal Engagement Letter is executed by both parties.
               </div>
 
               {/* Booking Summary Card */}

@@ -145,8 +145,18 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Institutional Regulatory & Disclaimer Banner */}
+        <div className="pt-8 pb-4 text-[11px] text-slate-400/90 leading-relaxed border-b border-white/10 space-y-2 font-light">
+          <p>
+            <strong className="text-slate-300 font-semibold">Regulatory & Demonstration Notice:</strong> Aurelius & Co. operates as an independent legal technology and practice demonstration platform. Case precedents, client appraisals, practitioner designations, and financial benchmarks displayed across this portal are representative demonstration models curated for technical evaluation and prototype verification.
+          </p>
+          <p>
+            <strong className="text-slate-300 font-semibold">No Legal Advice or Attorney-Client Relationship:</strong> The transmission or receipt of information through this website does not constitute legal advice and does not create an attorney-client relationship. An attorney-client relationship is formalized solely upon execution of a bilateral Engagement Letter following conflict-of-interest clearance.
+          </p>
+        </div>
+
         {/* Bottom Disclaimers & Legal Links */}
-        <div className="pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+        <div className="pt-6 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500 gap-4">
           <p>
             © {new Date().getFullYear()} Aurelius & Co. All rights reserved. Submitting an enquiry does not form an attorney-client relationship.
           </p>
