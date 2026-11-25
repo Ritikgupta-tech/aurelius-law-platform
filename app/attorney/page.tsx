@@ -203,6 +203,7 @@ export default function AttorneyWorkspacePage() {
             { id: 'appointments', label: `Assigned Sessions (${assignedConsultations.length})`, icon: Calendar },
             { id: 'enquiries', label: `Intake Inquiries (${assignedEnquiries.length})`, icon: Clock },
             { id: 'notes', label: 'Privileged Internal Notes', icon: Lock },
+            { id: 'availability', label: 'Chamber Availability & Calendar', icon: Scale },
           ].map((item) => {
             const Icon = item.icon;
             const active = tab === item.id;
@@ -397,6 +398,82 @@ export default function AttorneyWorkspacePage() {
                   <p className="text-xs text-slate-700 leading-relaxed font-light">{n.content}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: Chamber Availability & Concurrency Calendar */}
+        {tab === 'availability' && (
+          <div className="bg-white border border-[#07182E]/10 p-6 shadow-sm space-y-8">
+            <div className="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-serif text-xl text-[#07182E]">Chamber Availability & Calendar Guard</h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Configure operating hours, automated booking mutex rules, and courtroom hearing blackout windows for {currentAttorney.full_name}.
+                </p>
+              </div>
+              <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-semibold border border-emerald-200 self-start sm:self-auto">
+                Concurrency Mutex Active
+              </span>
+            </div>
+
+            {/* Operating Windows & Jurisdictional Base */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="p-5 bg-slate-50 border border-slate-200 space-y-2">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
+                  Primary Jurisdictional Base
+                </span>
+                <p className="font-serif text-lg text-[#07182E] font-medium">{currentAttorney.office_location} Chambers</p>
+                <p className="text-xs text-slate-500">Operating under Senior Managing Partner rotation</p>
+              </div>
+
+              <div className="p-5 bg-slate-50 border border-slate-200 space-y-2">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
+                  Daily Consultation Capacity
+                </span>
+                <p className="font-serif text-lg text-[#07182E] font-medium">4 Retained Sessions / Day</p>
+                <p className="text-xs text-slate-500">60-minute duration with 30-minute buffer</p>
+              </div>
+
+              <div className="p-5 bg-slate-50 border border-slate-200 space-y-2">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
+                  Conflict Verification Protocol
+                </span>
+                <p className="font-serif text-lg text-emerald-700 font-medium">Strict Pre-Disclosure</p>
+                <p className="text-xs text-slate-500">Adverse party screen mandatory prior to meeting</p>
+              </div>
+            </div>
+
+            {/* Configured Consulting Windows */}
+            <div className="space-y-4">
+              <h4 className="font-serif text-base text-[#07182E]">Standard Weekly Consultation Slots</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { slot: '09:30 AM - 10:30 AM', type: 'Morning Corporate Advisory', active: true },
+                  { slot: '11:30 AM - 12:30 PM', type: 'Executive M&A Briefing', active: true },
+                  { slot: '02:30 PM - 03:30 PM', type: 'Arbitration Strategy', active: true },
+                  { slot: '04:30 PM - 05:30 PM', type: 'Evening Private Wealth', active: true },
+                ].map((s) => (
+                  <div key={s.slot} className="p-4 border border-[#C6A36B]/40 bg-[#07182E] text-white space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-mono text-[#C6A36B] font-bold">{s.slot}</span>
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    </div>
+                    <p className="text-xs text-slate-300 font-light">{s.type}</p>
+                    <span className="inline-block text-[10px] uppercase tracking-wider text-[#C6A36B] font-semibold">
+                      Online / In-Chambers
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Courtroom Blackout Notice */}
+            <div className="p-4 bg-slate-50 border border-slate-200 flex items-start gap-3 text-xs text-slate-600">
+              <Scale size={18} className="text-[#A87948] shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-[#07182E] font-medium">Court Hearing Blackout Windows:</strong> When trial counsel is engaged in Royal Courts of Justice (UK) or US Federal District Court hearings, corresponding calendar dates are automatically removed from the public scheduling interface.
+              </div>
             </div>
           </div>
         )}
