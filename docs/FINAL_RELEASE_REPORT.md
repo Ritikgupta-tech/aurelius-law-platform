@@ -6,8 +6,11 @@ The **Aurelius & Co. Legal Technology Platform** has completed full-scale end-to
 The application is deployed live to production at:
 **[https://aurelius-law-platform.vercel.app](https://aurelius-law-platform.vercel.app)**
 
-Repository:
-**[https://github.com/Ritikgupta-tech/aurelius-law-platform](https://github.com/Ritikgupta-tech/aurelius-law-platform)**
+Primary GitHub Repository (`origin`):
+**[https://github.com/AshivamTechnologies/Aurelius-Co.-Legal-Technology-Platform.git](https://github.com/AshivamTechnologies/Aurelius-Co.-Legal-Technology-Platform.git)**
+
+Secondary Mirror Repository (`ritik`):
+**[https://github.com/Ritikgupta-tech/aurelius-law-platform.git](https://github.com/Ritikgupta-tech/aurelius-law-platform.git)**
 
 ---
 
