@@ -43,8 +43,51 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'LegalService',
+    name: 'Aurelius & Co.',
+    alternateName: 'Aurelius & Co. International Legal Counsel',
+    url: 'https://aurelius-law-platform.vercel.app',
+    logo: 'https://aurelius-law-platform.vercel.app/icon.svg',
+    description:
+      'Independent international legal counsel advising sovereign entities, multinational corporations, and visionary founders on high-stakes transactions, cross-border disputes, and intellectual property.',
+    telephone: '+44 20 7946 0912',
+    email: 'inquiries@aureliuslaw.com',
+    address: [
+      {
+        '@type': 'PostalAddress',
+        streetAddress: '250 Bishopsgate',
+        addressLocality: 'London',
+        postalCode: 'EC2M 4AA',
+        addressCountry: 'GB',
+      },
+      {
+        '@type': 'PostalAddress',
+        streetAddress: '767 Fifth Avenue',
+        addressLocality: 'New York',
+        addressRegion: 'NY',
+        postalCode: '10153',
+        addressCountry: 'US',
+      },
+    ],
+    openingHoursSpecification: {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      opens: '08:30',
+      closes: '18:30',
+    },
+    priceRange: '$$$$',
+  };
+
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   );
