@@ -15,6 +15,8 @@ import {
   EnquiryStatus,
   ConsultationStatus,
   ConsultationType,
+  InvoiceRecord,
+  EngagementLetter,
 } from './types';
 
 // Initial Seed Practice Areas (15 full practice areas from Prompt specification)
@@ -909,6 +911,66 @@ const INITIAL_NOTES: InternalNote[] = [
   },
 ];
 
+const INITIAL_INVOICES: InvoiceRecord[] = [
+  {
+    id: 'inv-101',
+    invoice_number: 'INV-2026-LON-0841',
+    user_id: 'client-usr-101',
+    client_name: 'Jonathan Reyes',
+    matter_reference: 'ENQ-202611-001',
+    matter_title: 'Cross-Border M&A Advisory & Antitrust Clearance',
+    issue_date: '2026-11-15',
+    due_date: '2026-11-30',
+    currency: 'GBP',
+    amount: 18500,
+    tax_amount: 3700,
+    total_amount: 22200,
+    status: 'paid',
+    payment_method: 'CHAPS / Wire Transfer (Barclays Chambers Trust Account)',
+    paid_at: '2026-11-18T10:15:00Z',
+    line_items: [
+      { description: 'Phase 1 Counsel Immersion & Target Regulatory Discovery (Arthur Sterling, KC)', hours: 12, rate: 950, amount: 11400 },
+      { description: 'Antitrust Clearance Memorandum & Filings Preparation', hours: 10, rate: 550, amount: 5500 },
+      { description: 'Statutory Regulatory Gazette Lodgment & Disclosures Fee', amount: 1600 },
+    ],
+  },
+  {
+    id: 'inv-102',
+    invoice_number: 'INV-2026-LON-0914',
+    user_id: 'client-usr-101',
+    client_name: 'Jonathan Reyes',
+    matter_reference: 'CON-202611-002',
+    matter_title: 'Phase 2 Share Purchase Agreement & Bilateral Closing Covenants',
+    issue_date: '2026-11-24',
+    due_date: '2026-12-08',
+    currency: 'GBP',
+    amount: 24000,
+    tax_amount: 4800,
+    total_amount: 28800,
+    status: 'pending',
+    line_items: [
+      { description: 'Bilateral Share Purchase Agreement Structuring & Negotiations', hours: 16, rate: 950, amount: 15200 },
+      { description: 'Senior Associate Forensic Disclosure Schedules Review', hours: 16, rate: 550, amount: 8800 },
+    ],
+  },
+];
+
+const INITIAL_ENGAGEMENT_LETTERS: EngagementLetter[] = [
+  {
+    id: 'eng-101',
+    letter_number: 'ENG-2026-0842',
+    user_id: 'client-usr-101',
+    client_name: 'Jonathan Reyes',
+    client_entity: 'Meridian Capital Partners',
+    attorney_id: 'att-1',
+    attorney_name: 'Arthur Sterling, KC',
+    matter_scope: 'Bilateral cross-border merger structuring, regulatory antitrust filings, and High Court commercial dispute defense representation.',
+    status: 'pending_signature',
+    issued_at: '2026-11-20T09:00:00Z',
+    sha256_hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+  },
+];
+
 // In-Memory Database store with local persistence fallback
 class LawFirmDatabase {
   private practiceAreas: PracticeArea[] = [...INITIAL_PRACTICE_AREAS];
@@ -923,6 +985,8 @@ class LawFirmDatabase {
   private internalNotes: InternalNote[] = [...INITIAL_NOTES];
   private auditLogs: AuditLog[] = [];
   private documents: DocumentRecord[] = [];
+  private invoices: InvoiceRecord[] = [...INITIAL_INVOICES];
+  private engagementLetters: EngagementLetter[] = [...INITIAL_ENGAGEMENT_LETTERS];
 
   constructor() {
     this.logAudit({
@@ -1368,6 +1432,66 @@ class LawFirmDatabase {
 
   getAuditLogs(): AuditLog[] {
     return [...this.auditLogs];
+  }
+
+  // --- INVOICES & RETAINERS ---
+  getInvoices(userId?: string): InvoiceRecord[] {
+    if (userId) {
+      return this.invoices.filter((i) => i.user_id === userId);
+    }
+    return [...this.invoices];
+  }
+
+  getInvoiceById(id: string): InvoiceRecord | undefined {
+    return this.invoices.find((i) => i.id === id);
+  }
+
+  payInvoice(id: string, paymentMethod: string): InvoiceRecord | undefined {
+    const inv = this.invoices.find((i) => i.id === id);
+    if (!inv) return undefined;
+    inv.status = 'paid';
+    inv.payment_method = paymentMethod;
+    inv.paid_at = new Date().toISOString();
+
+    this.logAudit({
+      user_id: inv.user_id,
+      user_email: inv.client_name,
+      user_role: 'client',
+      action: 'INVOICE_PAID',
+      entity: 'invoices',
+      entity_id: inv.id,
+      details: `Settled ${inv.currency} ${inv.total_amount} via ${paymentMethod}`,
+    });
+
+    return inv;
+  }
+
+  // --- ENGAGEMENT LETTERS ---
+  getEngagementLetters(userId?: string): EngagementLetter[] {
+    if (userId) {
+      return this.engagementLetters.filter((e) => e.user_id === userId);
+    }
+    return [...this.engagementLetters];
+  }
+
+  signEngagementLetter(id: string, signature: string): EngagementLetter | undefined {
+    const letter = this.engagementLetters.find((e) => e.id === id);
+    if (!letter) return undefined;
+    letter.status = 'executed';
+    letter.client_signature = signature;
+    letter.signed_at = new Date().toISOString();
+
+    this.logAudit({
+      user_id: letter.user_id,
+      user_email: letter.client_name,
+      user_role: 'client',
+      action: 'ENGAGEMENT_LETTER_EXECUTED',
+      entity: 'engagement_letters',
+      entity_id: letter.id,
+      details: `Digitally executed by ${signature} with SHA-256 seal`,
+    });
+
+    return letter;
   }
 }
 

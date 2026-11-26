@@ -37,3 +37,5 @@
 | **CSV Export Engine** | `app/api/admin/download/route.ts` | **Complete & Verified** | Exports inquiries, consultations, or audit logs as CSV. |
 | **Security Headers & CSP** | `next.config.js` | **Complete & Verified** | Strict HSTS, X-Frame-Options, X-Content-Type-Options, Brotli, and CSP. |
 | **Rate Limiting** | `lib/rateLimit.ts` & `/api/*` | **Complete & Verified** | Sliding-window IP rate limiter active on all public intake APIs (15 req/min). |
+| **Retainer Trust & Invoicing** | `app/api/client/invoices` & `/portal` | **Complete & Verified** | SRA-compliant trust account balance, fee notes, and 1-click settlement modal. |
+| **Engagement E-Signature Hub** | `app/api/client/engagement` & `/portal` | **Complete & Verified** | Bilateral engagement letters with digital typed signature and SHA-256 seal. |

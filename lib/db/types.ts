@@ -242,3 +242,45 @@ export interface AuditLog {
   ip_address?: string;
   created_at: string;
 }
+
+export interface InvoiceLineItem {
+  description: string;
+  hours?: number;
+  rate?: number;
+  amount: number;
+}
+
+export interface InvoiceRecord {
+  id: string;
+  invoice_number: string; // e.g. "INV-2026-0842"
+  user_id: string;
+  client_name: string;
+  matter_reference: string;
+  matter_title: string;
+  issue_date: string;
+  due_date: string;
+  currency: 'GBP' | 'USD' | 'EUR';
+  amount: number;
+  tax_amount: number;
+  total_amount: number;
+  status: 'paid' | 'pending' | 'overdue';
+  payment_method?: string;
+  paid_at?: string;
+  line_items: InvoiceLineItem[];
+}
+
+export interface EngagementLetter {
+  id: string;
+  letter_number: string; // e.g. "ENG-2026-019"
+  user_id: string;
+  client_name: string;
+  client_entity: string;
+  attorney_id: string;
+  attorney_name: string;
+  matter_scope: string;
+  status: 'pending_signature' | 'executed';
+  issued_at: string;
+  signed_at?: string;
+  client_signature?: string;
+  sha256_hash: string;
+}

@@ -42,6 +42,8 @@ When exceeded, the server returns HTTP 429:
 | `/api/client/enquiries` | POST | Required | Client | Submit authenticated matter enquiry |
 | `/api/client/consultations` | POST | Required | Client | Book authenticated consultation |
 | `/api/client/documents` | GET, POST | Required | Client / Staff | List user documents and register encrypted uploads |
+| `/api/client/invoices` | GET, POST | Required | Client / Staff | Query itemized fee statements and settle retainers via trust draw or card |
+| `/api/client/engagement` | GET, POST | Required | Client / Staff | Retrieve bilateral engagement letters and execute digital SHA-256 signatures |
 | `/api/admin/overview` | GET | Required | Admin / Staff | Real-time firm metrics and aggregate dashboard data |
 | `/api/admin/notes` | GET, POST | Required | Attorney / Admin | Retrieve and record legally privileged internal notes |
 | `/api/admin/status` | PATCH | Required | Attorney / Admin | Update lifecycle status of enquiries & consultations |

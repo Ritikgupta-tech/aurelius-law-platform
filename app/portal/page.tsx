@@ -19,12 +19,18 @@ import {
   ArrowUpRight,
   Lock,
   Plus,
+  CreditCard,
+  Receipt,
+  FileCheck2,
+  Landmark,
+  Check,
+  ExternalLink,
 } from 'lucide-react';
 import { db } from '@/lib/db/database';
-import { Enquiry, Consultation, DocumentRecord } from '@/lib/db/types';
+import { Enquiry, Consultation, DocumentRecord, InvoiceRecord, EngagementLetter } from '@/lib/db/types';
 
 export default function ClientPortalPage() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'consultations' | 'enquiries' | 'documents' | 'profile'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'consultations' | 'enquiries' | 'documents' | 'billing' | 'engagement' | 'profile'>('overview');
   
   // Authentication state
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true); // Default to authenticated demo client
@@ -76,6 +82,20 @@ export default function ClientPortalPage() {
     },
   ]);
 
+  // Billing & Invoices state
+  const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
+  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceRecord | null>(null);
+  const [payingInvoice, setPayingInvoice] = useState<InvoiceRecord | null>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState<string | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+
+  // Engagement Mandates & E-Signature state
+  const [engagementLetters, setEngagementLetters] = useState<EngagementLetter[]>([]);
+  const [signingLetter, setSigningLetter] = useState<EngagementLetter | null>(null);
+  const [signatureText, setSignatureText] = useState('');
+  const [signingLoading, setSigningLoading] = useState(false);
+  const [signingSuccess, setSigningSuccess] = useState<string | null>(null);
+
   // Upload state
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState('');
@@ -87,13 +107,15 @@ export default function ClientPortalPage() {
   const [quickEnquiryPractice, setQuickEnquiryPractice] = useState('Corporate and Commercial Law');
 
   useEffect(() => {
-    // Load enquiries, consultations, and documents from persistent API with memory fallback
+    // Load enquiries, consultations, documents, invoices, and engagement letters
     const loadPortalData = async () => {
       try {
-        const [enqRes, conRes, docRes] = await Promise.all([
+        const [enqRes, conRes, docRes, invRes, engRes] = await Promise.all([
           fetch(`/api/enquiries?userId=${currentUser.id}`).then((r) => r.json()).catch(() => ({ enquiries: [] })),
           fetch(`/api/consultations?userId=${currentUser.id}`).then((r) => r.json()).catch(() => ({ consultations: [] })),
           fetch(`/api/client/documents?userId=${currentUser.id}`).then((r) => r.json()).catch(() => ({ documents: [] })),
+          fetch(`/api/client/invoices?userId=${currentUser.id}`).then((r) => r.json()).catch(() => ({ invoices: [] })),
+          fetch(`/api/client/engagement?userId=${currentUser.id}`).then((r) => r.json()).catch(() => ({ engagementLetters: [] })),
         ]);
         if (enqRes.enquiries && enqRes.enquiries.length > 0) {
           setEnquiries(enqRes.enquiries);
@@ -108,9 +130,21 @@ export default function ClientPortalPage() {
         if (docRes.documents && docRes.documents.length > 0) {
           setDocuments(docRes.documents);
         }
+        if (invRes.invoices && invRes.invoices.length > 0) {
+          setInvoices(invRes.invoices);
+        } else {
+          setInvoices(db.getInvoices(currentUser.id));
+        }
+        if (engRes.engagementLetters && engRes.engagementLetters.length > 0) {
+          setEngagementLetters(engRes.engagementLetters);
+        } else {
+          setEngagementLetters(db.getEngagementLetters(currentUser.id));
+        }
       } catch (err) {
         setEnquiries(db.getEnquiries());
         setConsultations(db.getConsultations());
+        setInvoices(db.getInvoices(currentUser.id));
+        setEngagementLetters(db.getEngagementLetters(currentUser.id));
       }
     };
     loadPortalData();
@@ -258,6 +292,60 @@ export default function ClientPortalPage() {
     setQuickEnquiryOpen(false);
   };
 
+  const handlePayInvoice = async (invoiceId: string, paymentMethod: string) => {
+    setPaymentLoading(true);
+    setPaymentSuccess(null);
+    try {
+      const res = await fetch('/api/client/invoices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invoiceId, paymentMethod }),
+      });
+      const data = await res.json();
+      if (data.success && data.invoice) {
+        setInvoices((prev) => prev.map((inv) => (inv.id === invoiceId ? data.invoice : inv)));
+        setPaymentSuccess(`Fee note ${data.invoice.invoice_number} successfully settled. Trust ledger reconciled.`);
+        setTimeout(() => {
+          setPayingInvoice(null);
+          setPaymentSuccess(null);
+        }, 2200);
+      }
+    } catch (e) {
+      alert('Payment processing failed. Please try again.');
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  const handleSignEngagement = async (letterId: string) => {
+    if (!signatureText.trim()) return;
+    setSigningLoading(true);
+    setSigningSuccess(null);
+    try {
+      const res = await fetch('/api/client/engagement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ letterId, signature: signatureText }),
+      });
+      const data = await res.json();
+      if (data.success && data.engagementLetter) {
+        setEngagementLetters((prev) =>
+          prev.map((l) => (l.id === letterId ? data.engagementLetter : l))
+        );
+        setSigningSuccess(`Bilateral Engagement Mandate ${data.engagementLetter.letter_number} signed with SHA-256 seal.`);
+        setTimeout(() => {
+          setSigningLetter(null);
+          setSigningSuccess(null);
+          setSignatureText('');
+        }, 2200);
+      }
+    } catch (e) {
+      alert('E-signature execution failed. Please try again.');
+    } finally {
+      setSigningLoading(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'new':
@@ -397,6 +485,8 @@ export default function ClientPortalPage() {
                 { id: 'consultations', label: `Consultations (${consultations.length})`, icon: Calendar },
                 { id: 'enquiries', label: `Inquiries (${enquiries.length})`, icon: Clock },
                 { id: 'documents', label: `Document Vault (${documents.length})`, icon: FileText },
+                { id: 'billing', label: `Retainers & Invoices (${invoices.length})`, icon: CreditCard },
+                { id: 'engagement', label: `Engagement Mandates (${engagementLetters.length})`, icon: FileCheck2 },
               ].map((tab) => {
                 const Icon = tab.icon;
                 const active = activeTab === tab.id;
@@ -421,7 +511,7 @@ export default function ClientPortalPage() {
             {activeTab === 'overview' && (
               <div className="space-y-8">
                 {/* Stats row */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   <div className="p-6 bg-white border border-[#07182E]/10 space-y-1 shadow-sm">
                     <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
                       Upcoming Consultations
@@ -446,6 +536,14 @@ export default function ClientPortalPage() {
                     </span>
                     <p className="font-serif text-3xl text-[#07182E]">{documents.length}</p>
                     <p className="text-xs text-slate-500 font-light pt-1">AES-256 Vault protected</p>
+                  </div>
+
+                  <div className="p-6 bg-white border border-[#07182E]/10 space-y-1 shadow-sm">
+                    <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+                      Trust Account Escrow
+                    </span>
+                    <p className="font-serif text-3xl text-[#C6A36B]">£45,000</p>
+                    <p className="text-xs text-slate-500 font-light pt-1">SRA Bar Council Trust Monitored</p>
                   </div>
                 </div>
 
@@ -691,6 +789,404 @@ export default function ClientPortalPage() {
                 </div>
               </div>
             )}
+
+            {/* TAB 5: RETAINERS & INVOICES */}
+            {activeTab === 'billing' && (
+              <div className="space-y-8">
+                {/* Chambers Escrow Trust Card */}
+                <div className="p-6 sm:p-8 bg-gradient-to-br from-[#07182E] to-[#0B2340] text-white border border-[#C6A36B]/40 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Landmark size={18} className="text-[#C6A36B]" />
+                      <span className="text-[10px] uppercase tracking-widest text-[#C6A36B] font-bold">
+                        Regulated Chambers Trust Account (SRA Accounts Rules Compliant)
+                      </span>
+                    </div>
+                    <h3 className="font-serif text-3xl sm:text-4xl text-white font-normal">
+                      £45,000.00 <span className="text-xs font-sans text-slate-300 font-light">Available Trust Escrow</span>
+                    </h3>
+                    <p className="text-xs text-slate-300 max-w-xl font-light leading-relaxed">
+                      Barclays Bank PLC · Account Ref: <span className="font-mono text-white">AURELIUS-CLIENT-TRUST-LON-09</span> · Funds held on segregated escrow reserve to settle verified partner hours and statutory court filing reserves.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+                    <button
+                      onClick={() => {
+                        const pendingInv = invoices.find((i) => i.status === 'pending');
+                        if (pendingInv) setPayingInvoice(pendingInv);
+                        else alert('All current fee statements settled. Contact senior clerk to place additional retainer escrow.');
+                      }}
+                      className="px-5 py-3 bg-[#C6A36B] text-[#07182E] text-xs uppercase tracking-wider font-bold hover:bg-[#d5b682] shadow-lg flex items-center justify-center gap-2"
+                    >
+                      <CreditCard size={15} /> Replenish / Settle Retainer
+                    </button>
+                  </div>
+                </div>
+
+                {/* Invoices List */}
+                <div className="bg-white border border-[#07182E]/10 p-6 shadow-sm space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                      <h3 className="font-serif text-xl text-[#07182E]">Chambers Fee Statements & Retainer Invoices</h3>
+                      <p className="text-xs text-slate-500">Itemized statements of legal services, disbursements, and statutory filings.</p>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                      <Receipt size={15} className="text-[#A87948]" />
+                      <span>{invoices.length} Total Statements</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {invoices.map((inv) => (
+                      <div
+                        key={inv.id}
+                        className="p-5 border border-slate-200 bg-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-[#C6A36B] transition-colors"
+                      >
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-3">
+                            <span className="font-mono text-xs font-bold text-[#07182E]">{inv.invoice_number}</span>
+                            <span
+                              className={`px-2 py-0.5 text-[10px] uppercase font-bold border ${
+                                inv.status === 'paid'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                  : 'bg-amber-50 text-amber-700 border-amber-200 animate-pulse'
+                              }`}
+                            >
+                              {inv.status === 'paid' ? 'Settled (Trust Reconciled)' : 'Pending Settlement'}
+                            </span>
+                            <span className="text-xs text-slate-400 font-mono">Ref: {inv.matter_reference}</span>
+                          </div>
+                          <h4 className="font-serif text-base text-[#07182E]">{inv.matter_title}</h4>
+                          <p className="text-xs text-slate-500">
+                            Issued: {inv.issue_date} · Due Date: {inv.due_date}
+                            {inv.paid_at && ` · Settled via ${inv.payment_method}`}
+                          </p>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                          <div className="text-left sm:text-right">
+                            <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold block">Total Due</span>
+                            <span className="font-serif text-xl font-bold text-[#07182E]">
+                              {inv.currency === 'GBP' ? '£' : inv.currency === 'USD' ? '$' : '€'}
+                              {inv.total_amount.toLocaleString()}
+                            </span>
+                            <span className="text-[10px] text-slate-400 block font-light">Includes {inv.tax_amount ? `VAT £${inv.tax_amount.toLocaleString()}` : 'Disbursements'}</span>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setSelectedInvoice(inv)}
+                              className="px-3 py-2 border border-slate-300 text-xs uppercase tracking-wider text-slate-700 hover:border-[#C6A36B] hover:text-[#07182E] flex items-center gap-1"
+                            >
+                              <FileText size={13} /> Statement
+                            </button>
+
+                            {inv.status === 'pending' && (
+                              <button
+                                onClick={() => setPayingInvoice(inv)}
+                                className="px-4 py-2 bg-[#07182E] text-[#C6A36B] text-xs uppercase tracking-wider font-bold hover:bg-[#0B2340] flex items-center gap-1.5"
+                              >
+                                <CreditCard size={13} /> Settle Fee
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 6: ENGAGEMENT MANDATES & E-SIGNATURE */}
+            {activeTab === 'engagement' && (
+              <div className="bg-white border border-[#07182E]/10 p-6 shadow-sm space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                  <div>
+                    <h3 className="font-serif text-xl text-[#07182E]">Bilateral Engagement Mandates</h3>
+                    <p className="text-xs text-slate-500">
+                      Formal attorney-client retention agreements executed under English Law & Bar Council standards.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-[#A87948] font-semibold">
+                    <ShieldCheck size={16} /> Cryptographically Sealed
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {engagementLetters.map((letter) => (
+                    <div
+                      key={letter.id}
+                      className="p-6 border border-slate-200 bg-slate-50 space-y-4 hover:border-[#C6A36B] transition-colors"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono text-sm font-bold text-[#07182E]">{letter.letter_number}</span>
+                          <span
+                            className={`px-2.5 py-0.5 text-[10px] uppercase font-bold border ${
+                              letter.status === 'executed'
+                                ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                                : 'bg-amber-50 text-amber-800 border-amber-300 animate-pulse'
+                            }`}
+                          >
+                            {letter.status === 'executed' ? 'Mandate Formally Executed' : 'Awaiting Client E-Signature'}
+                          </span>
+                        </div>
+                        <span className="text-xs text-slate-400 font-mono">
+                          Issued: {new Date(letter.issued_at).toLocaleDateString()}
+                        </span>
+                      </div>
+
+                      <div className="space-y-2 text-xs text-slate-700">
+                        <p>
+                          <strong className="text-[#07182E] font-semibold">Engaged Parties:</strong> {letter.client_name} ({letter.client_entity}) ⇄ Aurelius & Co. ({letter.attorney_name})
+                        </p>
+                        <p className="leading-relaxed font-light text-slate-600">
+                          <strong className="text-[#07182E] font-semibold">Scope of Representation:</strong> {letter.matter_scope}
+                        </p>
+                        <div className="pt-1 flex flex-wrap items-center gap-4 text-[11px] text-slate-500">
+                          <span>Jurisdiction: High Court of Justice (England & Wales)</span>
+                          <span className="font-mono">SHA-256 Seal: {letter.sha256_hash.substring(0, 16)}...</span>
+                          {letter.signed_at && (
+                            <span className="text-emerald-700 font-medium">Signed by: {letter.client_signature} on {new Date(letter.signed_at).toLocaleString()}</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-200">
+                        {letter.status === 'pending_signature' ? (
+                          <button
+                            onClick={() => {
+                              setSigningLetter(letter);
+                              setSignatureText(currentUser.name);
+                            }}
+                            className="px-5 py-2.5 bg-[#07182E] text-[#C6A36B] text-xs uppercase tracking-wider font-bold hover:bg-[#0B2340] flex items-center gap-2 shadow-sm"
+                          >
+                            <FileCheck2 size={14} /> Review & Digitally Sign Mandate
+                          </button>
+                        ) : (
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold">
+                            <Check size={14} /> Executed Bilateral Mandate Active
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Modal 1: Statement Viewer Modal */}
+        {selectedInvoice && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white max-w-2xl w-full p-8 shadow-2xl border border-[#07182E]/20 space-y-6 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b pb-4">
+                <div>
+                  <span className="text-[10px] uppercase tracking-widest text-[#A87948] font-bold">Aurelius & Co. · Fee Statement</span>
+                  <h3 className="font-serif text-2xl text-[#07182E]">{selectedInvoice.invoice_number}</h3>
+                  <p className="text-xs text-slate-500">Matter: {selectedInvoice.matter_title}</p>
+                </div>
+                <button onClick={() => setSelectedInvoice(null)} className="text-slate-400 hover:text-slate-700 p-2 text-lg">✕</button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-xs text-slate-600 border-b pb-4">
+                <div>
+                  <p className="font-semibold text-[#07182E]">Client Details</p>
+                  <p>{selectedInvoice.client_name}</p>
+                  <p>Meridian Capital Partners</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-semibold text-[#07182E]">Dates & Terms</p>
+                  <p>Issued: {selectedInvoice.issue_date}</p>
+                  <p>Due: {selectedInvoice.due_date}</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-xs uppercase font-bold tracking-wider text-slate-700">Itemized Services & Disbursements</p>
+                <div className="border border-slate-200 divide-y divide-slate-100 text-xs">
+                  {selectedInvoice.line_items.map((item, idx) => (
+                    <div key={idx} className="p-3 flex justify-between items-start gap-4">
+                      <div>
+                        <p className="font-medium text-[#07182E]">{item.description}</p>
+                        {item.hours && <p className="text-[11px] text-slate-400">{item.hours} hrs @ £{item.rate}/hr</p>}
+                      </div>
+                      <span className="font-mono font-semibold text-[#07182E]">£{item.amount.toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t pt-4 space-y-1.5 text-xs text-right">
+                <p className="text-slate-500">Subtotal: <span className="font-mono text-[#07182E]">£{selectedInvoice.amount.toLocaleString()}</span></p>
+                <p className="text-slate-500">VAT (20%): <span className="font-mono text-[#07182E]">£{selectedInvoice.tax_amount.toLocaleString()}</span></p>
+                <p className="text-base font-serif font-bold text-[#07182E] pt-2">Total Payable: £{selectedInvoice.total_amount.toLocaleString()}</p>
+              </div>
+
+              <div className="p-4 bg-slate-50 border border-slate-200 text-[11px] text-slate-500 flex items-center justify-between">
+                <span>Barclays Chambers Account · Sort: 20-00-00 · Acc: 89423101</span>
+                <span className="font-semibold text-emerald-800">Status: {selectedInvoice.status.toUpperCase()}</span>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button onClick={() => setSelectedInvoice(null)} className="px-5 py-2.5 border border-slate-300 text-xs uppercase font-semibold">
+                  Close Statement
+                </button>
+                <button onClick={() => window.print()} className="px-5 py-2.5 bg-[#07182E] text-[#C6A36B] text-xs uppercase font-bold">
+                  Print Statement
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal 2: Payment / Settlement Modal */}
+        {payingInvoice && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white max-w-lg w-full p-8 shadow-2xl border border-[#07182E]/20 space-y-6">
+              <div className="flex items-center justify-between border-b pb-3">
+                <div className="space-y-0.5">
+                  <span className="text-[10px] uppercase tracking-widest text-[#A87948] font-bold">Settle Retainer Invoice</span>
+                  <h3 className="font-serif text-xl text-[#07182E]">{payingInvoice.invoice_number}</h3>
+                </div>
+                <button onClick={() => setPayingInvoice(null)} className="text-slate-400 hover:text-slate-700 text-lg">✕</button>
+              </div>
+
+              <div className="p-4 bg-slate-50 border border-slate-200 text-xs space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Matter:</span>
+                  <span className="font-medium text-[#07182E]">{payingInvoice.matter_title}</span>
+                </div>
+                <div className="flex justify-between text-sm font-serif font-bold text-[#07182E]">
+                  <span>Total Amount Due:</span>
+                  <span>£{payingInvoice.total_amount.toLocaleString()}</span>
+                </div>
+              </div>
+
+              {paymentSuccess ? (
+                <div className="p-4 bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs space-y-2 text-center">
+                  <CheckCircle2 size={24} className="mx-auto text-emerald-600" />
+                  <p className="font-semibold">{paymentSuccess}</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-xs uppercase font-bold tracking-wider text-slate-700">Choose Settlement Method</p>
+                  
+                  <button
+                    onClick={() => handlePayInvoice(payingInvoice.id, 'Chambers Escrow Trust Account Draw')}
+                    disabled={paymentLoading}
+                    className="w-full p-4 border border-slate-200 hover:border-[#C6A36B] bg-white flex items-center justify-between text-left transition-colors"
+                  >
+                    <div>
+                      <p className="text-xs font-bold text-[#07182E]">Draw from Retainer Trust Account</p>
+                      <p className="text-[11px] text-slate-500">Current balance £45,000.00 covers this fee statement.</p>
+                    </div>
+                    <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-[10px] uppercase font-bold">Recommended</span>
+                  </button>
+
+                  <button
+                    onClick={() => handlePayInvoice(payingInvoice.id, 'Corporate Stripe Corporate Card (•••• 4242)')}
+                    disabled={paymentLoading}
+                    className="w-full p-4 border border-slate-200 hover:border-[#C6A36B] bg-white flex items-center justify-between text-left transition-colors"
+                  >
+                    <div>
+                      <p className="text-xs font-bold text-[#07182E]">Stripe 3D-Secure Corporate Card</p>
+                      <p className="text-[11px] text-slate-500">Instant credit card settlement via Stripe Enterprise.</p>
+                    </div>
+                    <CreditCard size={18} className="text-slate-400" />
+                  </button>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setPayingInvoice(null)}
+                  className="px-4 py-2 border border-slate-300 text-xs uppercase"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal 3: Engagement Letter E-Signature Modal */}
+        {signingLetter && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white max-w-2xl w-full p-8 shadow-2xl border border-[#07182E]/20 space-y-6 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b pb-3">
+                <div className="space-y-0.5">
+                  <span className="text-[10px] uppercase tracking-widest text-[#A87948] font-bold">Bilateral Digital Execution</span>
+                  <h3 className="font-serif text-xl text-[#07182E]">{signingLetter.letter_number}</h3>
+                </div>
+                <button onClick={() => setSigningLetter(null)} className="text-slate-400 hover:text-slate-700 text-lg">✕</button>
+              </div>
+
+              <div className="p-4 bg-slate-50 border border-slate-200 space-y-3 text-xs leading-relaxed text-slate-700">
+                <h4 className="font-serif text-sm text-[#07182E] font-semibold">Terms of Formal Legal Engagement</h4>
+                <p>
+                  This Bilateral Engagement Agreement confirms representation by Aurelius & Co. ({signingLetter.attorney_name}) on behalf of {signingLetter.client_name} ({signingLetter.client_entity}).
+                </p>
+                <p>
+                  <strong>Scope of Work:</strong> {signingLetter.matter_scope}
+                </p>
+                <p>
+                  <strong>Legal Professional Privilege:</strong> All instructions, memoranda, and communications are safeguarded under strict statutory Legal Professional Privilege.
+                </p>
+                <p>
+                  <strong>Dispute & Governing Law:</strong> Any dispute arising hereunder shall be subject to the exclusive jurisdiction of the Commercial Court of the High Court of Justice in London, England.
+                </p>
+              </div>
+
+              {signingSuccess ? (
+                <div className="p-4 bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs space-y-2 text-center">
+                  <CheckCircle2 size={24} className="mx-auto text-emerald-600" />
+                  <p className="font-semibold">{signingSuccess}</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <label className="text-xs uppercase tracking-wider text-slate-700 font-semibold block">
+                    Type Full Legal Name as Digital Signature
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={signatureText}
+                    onChange={(e) => setSignatureText(e.target.value)}
+                    placeholder="e.g. Jonathan Reyes"
+                    className="w-full p-3 border border-slate-300 text-sm font-serif italic text-[#07182E] bg-white focus:outline-none focus:border-[#C6A36B]"
+                  />
+                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                    <span>Cryptographic Seal: SHA-256</span>
+                    <span>Timestamp: {new Date().toISOString()}</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-3 pt-2 border-t">
+                <button
+                  type="button"
+                  onClick={() => setSigningLetter(null)}
+                  className="px-4 py-2 border border-slate-300 text-xs uppercase"
+                >
+                  Cancel
+                </button>
+                {!signingSuccess && (
+                  <button
+                    onClick={() => handleSignEngagement(signingLetter.id)}
+                    disabled={signingLoading || !signatureText.trim()}
+                    className="px-6 py-2.5 bg-[#07182E] text-[#C6A36B] text-xs uppercase tracking-wider font-bold hover:bg-[#0B2340] disabled:opacity-50 flex items-center gap-2"
+                  >
+                    <FileCheck2 size={14} />
+                    {signingLoading ? 'Sealing Mandate...' : 'Execute Bilateral Mandate'}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
